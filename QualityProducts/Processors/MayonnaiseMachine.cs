@@ -19,7 +19,7 @@ namespace QualityProducts.Processors
                 case 182:
                     heldObject.Value = new SObject(Vector2.Zero, 306, null, false, true, false, false)
                     {
-                        Quality = 2
+                        Stack = 2
                     };
                     if (!probe)
                     {

@@ -25,7 +25,7 @@ namespace QualityProducts.Processors
                 case 438:
                     heldObject.Value = new SObject(Vector2.Zero, 426, null, false, true, false, false)
                     {
-                        Quality = 2
+                        Stack = 2
                     };
                     if (!probe)
                     {
@@ -44,7 +44,7 @@ namespace QualityProducts.Processors
                 case 186:
                     heldObject.Value = new SObject(Vector2.Zero, 424, "Cheese (=)", false, true, false, false)
                     {
-                        Quality = 2
+                        Stack = 2
                     };
                     if (!probe)
                     {
