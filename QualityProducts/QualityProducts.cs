@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using QualityProducts.Menus;
+using QualityProducts.Util;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
+using SObject = StardewValley.Object;
 
 namespace QualityProducts
 {
@@ -11,17 +14,26 @@ namespace QualityProducts
     {
         internal static QualityProducts Instance { get; private set; }
 
-        private readonly Dictionary<GameLocation, List<Processor>> locationProcessors = new Dictionary<GameLocation, List<Processor>>(new GameLocationComparer());
+        internal readonly Dictionary<GameLocation, List<Processor>> locationProcessors = new Dictionary<GameLocation, List<Processor>>(new ObjectReferenceComparer<GameLocation>());
 
         public override void Entry(IModHelper helper)
         {
             Instance = this;
+
             Helper.Events.Display.MenuChanged += OnCrafting;
             Helper.Events.GameLoop.Saved += OnSaved;
             Helper.Events.GameLoop.Saving += OnSaving;
             Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             Helper.Events.World.LocationListChanged += OnLoadLocation;
             Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
+        }
+
+        private void PlaceObjects<T>(GameLocation gameLocation, List<T> objects) where T : SObject
+        {
+            foreach (T @object in objects)
+            {
+                gameLocation.setObject(@object.TileLocation, @object);
+            }
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
@@ -39,7 +51,7 @@ namespace QualityProducts
                 }
 
                 List<Processor> processors = new List<Processor>();
-                foreach (Object @object in gameLocation.Objects.Values)
+                foreach (SObject @object in gameLocation.Objects.Values)
                 {
                     if (@object.bigCraftable.Value && Processor.WhichProcessor(@object.ParentSheetIndex) != null && !(@object is Processor))
                     {
@@ -48,10 +60,7 @@ namespace QualityProducts
                     }
                 }
 
-                foreach (Processor processor in processors)
-                {
-                    gameLocation.setObject(processor.TileLocation, processor);
-                }
+                PlaceObjects(gameLocation, processors);
             }
         }
 
@@ -59,21 +68,18 @@ namespace QualityProducts
         {
             foreach (KeyValuePair<GameLocation, List<Processor>> kv in locationProcessors)
             {
-                List<Object> objects = new List<Object>();
-                foreach (Object @object in kv.Key.Objects.Values)
+                List<SObject> objects = new List<SObject>();
+                foreach (SObject @object in kv.Key.Objects.Values)
                 {
-                    if (Processor.WhichProcessor(@object.ParentSheetIndex) != null && @object is Processor processor)
+                    if (@object is Processor processor)
                     {
                         kv.Value.Add(processor);
-                        Object objectClone = processor.ToObject();
+                        SObject objectClone = processor.ToObject();
                         objects.Add(objectClone);
                     }
                 }
 
-                foreach (Object @object in objects)
-                {
-                    kv.Key.setObject(@object.TileLocation, @object);
-                }
+                PlaceObjects(kv.Key, objects);
             }
         }
 
@@ -81,10 +87,7 @@ namespace QualityProducts
         {
             foreach (KeyValuePair<GameLocation, List<Processor>> kv in locationProcessors)
             {
-                foreach (Processor processor in kv.Value)
-                {
-                    kv.Key.setObject(processor.TileLocation, processor);
-                }
+                PlaceObjects(kv.Key, kv.Value);
                 kv.Value.Clear();
             }
         }
@@ -92,7 +95,7 @@ namespace QualityProducts
         private void OnPlacingProcessor(object sender, ObjectListChangedEventArgs e)
         {
             List<Processor> processors = new List<Processor>();
-            foreach (KeyValuePair<Vector2, Object> kv in e.Added)
+            foreach (KeyValuePair<Vector2, SObject> kv in e.Added)
             {
                 if (!(kv.Value is Processor))
                 {
@@ -104,10 +107,7 @@ namespace QualityProducts
                 }
             }
 
-            foreach (Processor processor in processors)
-            {
-                e.Location.setObject(processor.TileLocation, processor);
-            }
+            PlaceObjects(e.Location, processors);
         }
 
         private void OnCrafting(object sender, MenuChangedEventArgs e)

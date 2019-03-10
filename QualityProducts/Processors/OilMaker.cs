@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
+using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace QualityProducts.Processors
 {
     public class OilMaker : Processor
     {
@@ -20,12 +21,12 @@ namespace QualityProducts
             });
         }
 
-        protected override bool PerformProcessing(Object @object, bool probe, Farmer who)
+        protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch (@object.ParentSheetIndex)
             {
                 case 270:
-                    heldObject.Value = new Object(Vector2.Zero, 247, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 247, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 1000;
@@ -33,7 +34,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 421:
-                    heldObject.Value = new Object(Vector2.Zero, 247, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 247, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 60;
@@ -41,7 +42,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 430:
-                    heldObject.Value = new Object(Vector2.Zero, 432, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 432, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 360;
@@ -49,7 +50,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 431:
-                    heldObject.Value = new Object(247, 1, false, -1, 0);
+                    heldObject.Value = new SObject(247, 1, false, -1, 0);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 3200;

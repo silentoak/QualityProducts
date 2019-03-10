@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
+using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace QualityProducts.Processors
 {
     public class Keg : Processor
     {
@@ -20,12 +21,12 @@ namespace QualityProducts
             });
         }
 
-        protected override bool PerformProcessing(Object @object, bool probe, Farmer who)
+        protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch ((int)@object.parentSheetIndex)
             {
                 case 262:
-                    heldObject.Value = new Object(Vector2.Zero, 346, "Beer", false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 346, "Beer", false, true, false, false);
                     if (!probe)
                     {
                         heldObject.Value.name = "Beer";
@@ -34,7 +35,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 304:
-                    heldObject.Value = new Object(Vector2.Zero, 303, "Pale Ale", false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 303, "Pale Ale", false, true, false, false);
                     if (!probe)
                     {
                         heldObject.Value.name = "Pale Ale";
@@ -48,7 +49,7 @@ namespace QualityProducts
                         Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Object.cs.12721"));
                         return false;
                     }
-                    heldObject.Value = new Object(Vector2.Zero, 395, "Coffee", false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 395, "Coffee", false, true, false, false);
                     if (!probe)
                     {
                         heldObject.Value.name = "Coffee";
@@ -62,7 +63,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 340:
-                    heldObject.Value = new Object(Vector2.Zero, 459, "Mead", false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 459, "Mead", false, true, false, false);
                     if (!probe)
                     {
                         heldObject.Value.name = "Mead";
@@ -74,7 +75,7 @@ namespace QualityProducts
             switch (@object.Category)
             {
                 case -75:
-                    heldObject.Value = new Object(Vector2.Zero, 350, @object.Name + " Juice", false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 350, @object.Name + " Juice", false, true, false, false)
                     {
                         Price = (int)(@object.Price * 2.25)
                     };
@@ -88,7 +89,7 @@ namespace QualityProducts
                     }
                     return true;
                 case -79:
-                    heldObject.Value = new Object(Vector2.Zero, 348, @object.Name + " Wine", false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 348, @object.Name + " Wine", false, true, false, false)
                     {
                         Price = @object.Price * 3
                     };

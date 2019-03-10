@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
+using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace QualityProducts.Processors
 {
     public class MayonnaiseMachine : Processor
     {
@@ -9,14 +10,14 @@ namespace QualityProducts
         {
         }
 
-        protected override bool PerformProcessing(Object @object, bool probe, Farmer who)
+        protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch (@object.ParentSheetIndex)
             {
                 case 107:
                 case 174:
                 case 182:
-                    heldObject.Value = new Object(Vector2.Zero, 306, null, false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 306, null, false, true, false, false)
                     {
                         Quality = 2
                     };
@@ -28,7 +29,7 @@ namespace QualityProducts
                     return true;
                 case 176:
                 case 180:
-                    heldObject.Value = new Object(Vector2.Zero, 306, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 306, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 180;
@@ -36,7 +37,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 442:
-                    heldObject.Value = new Object(Vector2.Zero, 307, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 307, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 180;
@@ -44,7 +45,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 305:
-                    heldObject.Value = new Object(Vector2.Zero, 308, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 308, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 180;

@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
+using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace QualityProducts.Processors
 {
     public class CheesePress : Processor
     {
@@ -9,12 +10,12 @@ namespace QualityProducts
         {
         }
 
-        protected override bool PerformProcessing(Object @object, bool probe, Farmer who)
+        protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch (@object.ParentSheetIndex)
             {
                 case 436:
-                    heldObject.Value = new Object(Vector2.Zero, 426, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 426, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 200;
@@ -22,7 +23,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 438:
-                    heldObject.Value = new Object(Vector2.Zero, 426, null, false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 426, null, false, true, false, false)
                     {
                         Quality = 2
                     };
@@ -33,7 +34,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 184:
-                    heldObject.Value = new Object(Vector2.Zero, 424, null, false, true, false, false);
+                    heldObject.Value = new SObject(Vector2.Zero, 424, null, false, true, false, false);
                     if (!probe)
                     {
                         minutesUntilReady.Value = 200;
@@ -41,7 +42,7 @@ namespace QualityProducts
                     }
                     return true;
                 case 186:
-                    heldObject.Value = new Object(Vector2.Zero, 424, "Cheese (=)", false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 424, "Cheese (=)", false, true, false, false)
                     {
                         Quality = 2
                     };

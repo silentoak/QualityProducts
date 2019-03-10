@@ -9,11 +9,11 @@ using StardewValley.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Object = StardewValley.Object;
+using SObject = StardewValley.Object;
 
 /* This hack was inspired by spacechase0's Cooking Skill mod (https://github.com/spacechase0/CookingSkill/blob/951625f740d26cebf2c11896fab7d69c3ee75c4f/NewCraftingPage.cs) */
 
-namespace QualityProducts
+namespace QualityProducts.Menus
 {
     public class ModdedCraftingPage : IClickableMenu
     {
@@ -68,15 +68,15 @@ namespace QualityProducts
             : base(x, y, width, height, false)
         {
             this.cooking = cooking;
-            inventory = new InventoryMenu(base.xPositionOnScreen + IClickableMenu.spaceToClearSideBorder + IClickableMenu.borderWidth, base.yPositionOnScreen + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth + 320 - 16, false, null, null, -1, 3, 0, 0, true)
+            inventory = new InventoryMenu(xPositionOnScreen + spaceToClearSideBorder + borderWidth, yPositionOnScreen + spaceToClearTopBorder + borderWidth + 320 - 16, false, null, null, -1, 3, 0, 0, true)
             {
                 showGrayedOutSlots = true
             };
             if (cooking)
             {
-                base.initializeUpperRightCloseButton();
+                initializeUpperRightCloseButton();
             }
-            trashCan = new ClickableTextureComponent(new Rectangle(base.xPositionOnScreen + width + 4, base.yPositionOnScreen + height - 192 - 32 - IClickableMenu.borderWidth - 104, 64, 104), Game1.mouseCursors, new Rectangle(669, 261, 16, 26), 4f, false)
+            trashCan = new ClickableTextureComponent(new Rectangle(xPositionOnScreen + width + 4, yPositionOnScreen + height - 192 - 32 - borderWidth - 104, 64, 104), Game1.mouseCursors, new Rectangle(669, 261, 16, 26), 4f, false)
             {
                 myID = 106
             };
@@ -121,13 +121,13 @@ namespace QualityProducts
             layoutRecipes(list);
             if (pagesOfCraftingRecipes.Count > 1)
             {
-                upButton = new ClickableTextureComponent(new Rectangle(base.xPositionOnScreen + 768 + 32, craftingPageY(), 64, 64), Game1.mouseCursors, Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 12, -1, -1), 0.8f, false)
+                upButton = new ClickableTextureComponent(new Rectangle(xPositionOnScreen + 768 + 32, craftingPageY(), 64, 64), Game1.mouseCursors, Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 12, -1, -1), 0.8f, false)
                 {
                     myID = 88,
                     downNeighborID = 89,
                     rightNeighborID = 106
                 };
-                downButton = new ClickableTextureComponent(new Rectangle(base.xPositionOnScreen + 768 + 32, craftingPageY() + 192 + 32, 64, 64), Game1.mouseCursors, Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 11, -1, -1), 0.8f, false)
+                downButton = new ClickableTextureComponent(new Rectangle(xPositionOnScreen + 768 + 32, craftingPageY() + 192 + 32, 64, 64), Game1.mouseCursors, Game1.getSourceRectForStandardTileSheet(Game1.mouseCursors, 11, -1, -1), 0.8f, false)
                 {
                     myID = 89,
                     upNeighborID = 88,
@@ -147,7 +147,7 @@ namespace QualityProducts
 
         private int craftingPageY()
         {
-            return base.yPositionOnScreen + IClickableMenu.spaceToClearTopBorder + IClickableMenu.borderWidth - 16;
+            return yPositionOnScreen + spaceToClearTopBorder + borderWidth - 16;
         }
 
         private ClickableTextureComponent[,] createNewPageLayout()
@@ -201,7 +201,7 @@ namespace QualityProducts
 
         private void layoutRecipes(List<string> playerRecipes)
         {
-            int num = base.xPositionOnScreen + IClickableMenu.spaceToClearSideBorder + IClickableMenu.borderWidth - 16;
+            int num = xPositionOnScreen + spaceToClearSideBorder + borderWidth - 16;
             int num2 = 8;
             Dictionary<ClickableTextureComponent, CraftingRecipe> dictionary = createNewPage();
             int num3 = 0;
@@ -279,14 +279,14 @@ namespace QualityProducts
             base.noSnappedComponentFound(direction, oldRegion, oldID);
             if (oldRegion == 8000 && direction == 2)
             {
-                base.currentlySnappedComponent = base.getComponentWithID(oldID % 10);
-                base.currentlySnappedComponent.upNeighborID = oldID;
+                currentlySnappedComponent = getComponentWithID(oldID % 10);
+                currentlySnappedComponent.upNeighborID = oldID;
             }
         }
 
         public override void snapToDefaultClickableComponent()
         {
-            base.currentlySnappedComponent = ((currentCraftingPage < pagesOfCraftingRecipes.Count) ? pagesOfCraftingRecipes[currentCraftingPage].First().Key : null);
+            currentlySnappedComponent = (currentCraftingPage < pagesOfCraftingRecipes.Count) ? pagesOfCraftingRecipes[currentCraftingPage].First().Key : null;
             snapCursorToCurrentSnappedComponent();
         }
 
@@ -299,7 +299,7 @@ namespace QualityProducts
                 {
                     if (inventory.inventory.Count > i)
                     {
-                        inventory.inventory[i].upNeighborID = base.currentlySnappedComponent.upNeighborID;
+                        inventory.inventory[i].upNeighborID = currentlySnappedComponent.upNeighborID;
                     }
                 }
             }
@@ -310,9 +310,9 @@ namespace QualityProducts
             base.receiveKeyPress(key);
             if (key.Equals(Keys.Delete) && heldItem != null && heldItem.canBeTrashed())
             {
-                if (heldItem is Object && Game1.player.specialItems.Contains((heldItem as Object).parentSheetIndex))
+                if (heldItem is SObject && Game1.player.specialItems.Contains(heldItem.parentSheetIndex))
                 {
-                    Game1.player.specialItems.Remove((heldItem as Object).parentSheetIndex);
+                    Game1.player.specialItems.Remove(heldItem.parentSheetIndex);
                 }
                 heldItem = null;
                 Game1.playSound("trashcan");
@@ -393,9 +393,9 @@ namespace QualityProducts
             }
             if (trashCan != null && trashCan.containsPoint(x, y) && heldItem != null && heldItem.canBeTrashed())
             {
-                if (heldItem is Object && Game1.player.specialItems.Contains((heldItem as Object).parentSheetIndex))
+                if (heldItem is SObject && Game1.player.specialItems.Contains(heldItem.parentSheetIndex))
                 {
-                    Game1.player.specialItems.Remove((heldItem as Object).parentSheetIndex);
+                    Game1.player.specialItems.Remove(heldItem.parentSheetIndex);
                 }
                 heldItem = null;
                 Game1.playSound("trashcan");
@@ -467,9 +467,9 @@ namespace QualityProducts
 
             public Ingredient(NetObjectList<Item> itemList, int index, int amount)
             {
-                this.ItemList = itemList;
-                this.Index = index;
-                this.Amount = amount;
+                ItemList = itemList;
+                Index = index;
+                Amount = amount;
             }
         }
 
@@ -478,13 +478,13 @@ namespace QualityProducts
          */
         private void clickCraftingRecipe(ClickableTextureComponent c, bool playSound = true)
         {
-            List<Ingredient> ingredients = selectIngredients(pagesOfCraftingRecipes[currentCraftingPage][c]);
+            List<Ingredient> ingredients = SelectIngredients(pagesOfCraftingRecipes[currentCraftingPage][c]);
 
             int avgQuality = 0;
             int totalIngredients = 0;
             foreach (Ingredient ingredient in ingredients)
             {
-                Object selectedItem = ingredient.ItemList[ingredient.Index] as Object;
+                SObject selectedItem = ingredient.ItemList[ingredient.Index] as SObject;
                 avgQuality += selectedItem.Quality * selectedItem.Stack;
                 totalIngredients += selectedItem.Stack;
             }
@@ -495,7 +495,7 @@ namespace QualityProducts
             }
 
             Item item = pagesOfCraftingRecipes[currentCraftingPage][c].createItem();
-            if (item is Object obj)
+            if (item is SObject obj)
             {
                 obj.Quality = avgQuality;
             }
@@ -573,7 +573,7 @@ namespace QualityProducts
         /*
          * Modified from CraftingRecipes.consumeIngredients
          */
-        private List<Ingredient> selectIngredients(CraftingRecipe recipe)
+        private List<Ingredient> SelectIngredients(CraftingRecipe recipe)
         {
             List<Ingredient> selected = new List<Ingredient>();
             Dictionary<int, int> recipeList = QualityProducts.Instance.Helper.Reflection.GetField<Dictionary<int, int>>(recipe, "recipeList").GetValue();
@@ -587,7 +587,7 @@ namespace QualityProducts
                 for (int itemIdx = playerItemList.Count - 1; itemIdx >= 0; itemIdx--)
                 {
                     Item playerItem = playerItemList[itemIdx];
-                    if (playerItem != null && playerItem is Object && !(bool)(playerItem as Object).bigCraftable && (playerItem.parentSheetIndex == ingredientID || playerItem.Category == ingredientID))
+                    if (playerItem != null && playerItem is SObject && !(bool)(playerItem as SObject).bigCraftable && (playerItem.parentSheetIndex == ingredientID || playerItem.Category == ingredientID))
                     {
                         recipeList[ingredientID] -= playerItem.Stack;
 
@@ -608,7 +608,7 @@ namespace QualityProducts
                     for (int itemIdx = fridgeItemList.Count - 1; itemIdx >= 0; itemIdx--)
                     {
                         Item fridgeItem = fridgeItemList[itemIdx];
-                        if (fridgeItem != null && fridgeItem is Object && (fridgeItem.parentSheetIndex == ingredientID || fridgeItem.Category == ingredientID))
+                        if (fridgeItem != null && fridgeItem is SObject && (fridgeItem.parentSheetIndex == ingredientID || fridgeItem.Category == ingredientID))
                         {
                             recipeList[ingredientID] -= fridgeItem.Stack;
 
@@ -724,14 +724,14 @@ namespace QualityProducts
         {
             if (cooking)
             {
-                Game1.drawDialogueBox(base.xPositionOnScreen, base.yPositionOnScreen, base.width, base.height, false, true, null, false, false);
+                Game1.drawDialogueBox(xPositionOnScreen, yPositionOnScreen, width, height, false, true, null, false, false);
             }
-            base.drawHorizontalPartition(b, base.yPositionOnScreen + IClickableMenu.borderWidth + IClickableMenu.spaceToClearTopBorder + 256, false);
+            drawHorizontalPartition(b, yPositionOnScreen + borderWidth + spaceToClearTopBorder + 256, false);
             inventory.draw(b);
             if (trashCan != null)
             {
                 trashCan.draw(b);
-                b.Draw(Game1.mouseCursors, new Vector2((float)(trashCan.bounds.X + 60), (float)(trashCan.bounds.Y + 40)), new Rectangle(686, 256, 18, 10), Color.White, trashCanLidRotation, new Vector2(16f, 10f), 4f, SpriteEffects.None, 0.86f);
+                b.Draw(Game1.mouseCursors, new Vector2(trashCan.bounds.X + 60, trashCan.bounds.Y + 40), new Rectangle(686, 256, 18, 10), Color.White, trashCanLidRotation, new Vector2(16f, 10f), 4f, SpriteEffects.None, 0.86f);
             }
             b.End();
             b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, null);
@@ -750,7 +750,7 @@ namespace QualityProducts
                     key.draw(b);
                     if (pagesOfCraftingRecipes[currentCraftingPage][key].numberProducedPerCraft > 1)
                     {
-                        NumberSprite.draw(pagesOfCraftingRecipes[currentCraftingPage][key].numberProducedPerCraft, b, new Vector2((float)(key.bounds.X + 64 - 2), (float)(key.bounds.Y + 64 - 2)), Color.Red, 0.5f * (key.scale / 4f), 0.97f, 1f, 0, 0);
+                        NumberSprite.draw(pagesOfCraftingRecipes[currentCraftingPage][key].numberProducedPerCraft, b, new Vector2(key.bounds.X + 64 - 2, key.bounds.Y + 64 - 2), Color.Red, 0.5f * (key.scale / 4f), 0.97f, 1f, 0, 0);
                     }
                 }
             }
@@ -758,15 +758,15 @@ namespace QualityProducts
             b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, null);
             if (hoverItem != null)
             {
-                IClickableMenu.drawToolTip(b, hoverText, hoverTitle, hoverItem, heldItem != null, -1, 0, -1, -1, null, -1);
+                drawToolTip(b, hoverText, hoverTitle, hoverItem, heldItem != null, -1, 0, -1, -1, null, -1);
             }
             else if (!string.IsNullOrEmpty(hoverText))
             {
-                IClickableMenu.drawHoverText(b, hoverText, Game1.smallFont, (heldItem != null) ? 64 : 0, (heldItem != null) ? 64 : 0, -1, null, -1, null, null, 0, -1, -1, -1, -1, 1f, null);
+                drawHoverText(b, hoverText, Game1.smallFont, (heldItem != null) ? 64 : 0, (heldItem != null) ? 64 : 0, -1, null, -1, null, null, 0, -1, -1, -1, -1, 1f, null);
             }
             if (heldItem != null)
             {
-                heldItem.drawInMenu(b, new Vector2((float)(Game1.getOldMouseX() + 16), (float)(Game1.getOldMouseY() + 16)), 1f);
+                heldItem.drawInMenu(b, new Vector2(Game1.getOldMouseX() + 16, Game1.getOldMouseY() + 16), 1f);
             }
             base.draw(b);
             if (downButton != null && currentCraftingPage < pagesOfCraftingRecipes.Count - 1)
@@ -779,11 +779,11 @@ namespace QualityProducts
             }
             if (cooking)
             {
-                base.drawMouse(b);
+                drawMouse(b);
             }
             if (hoverRecipe != null)
             {
-                IClickableMenu.drawHoverText(b, " ", Game1.smallFont, (heldItem != null) ? 48 : 0, (heldItem != null) ? 48 : 0, -1, hoverRecipe.DisplayName, -1, (cooking && lastCookingHover != null && Game1.objectInformation[(lastCookingHover as Object).parentSheetIndex].Split('/').Length > 7) ? Game1.objectInformation[(lastCookingHover as Object).parentSheetIndex].Split('/')[7].Split(' ') : null, lastCookingHover, 0, -1, -1, -1, -1, 1f, hoverRecipe);
+                drawHoverText(b, " ", Game1.smallFont, (heldItem != null) ? 48 : 0, (heldItem != null) ? 48 : 0, -1, hoverRecipe.DisplayName, -1, (cooking && lastCookingHover != null && Game1.objectInformation[lastCookingHover.parentSheetIndex].Split('/').Length > 7) ? Game1.objectInformation[lastCookingHover.parentSheetIndex].Split('/')[7].Split(' ') : null, lastCookingHover, 0, -1, -1, -1, -1, 1f, hoverRecipe);
             }
         }
     }

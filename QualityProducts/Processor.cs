@@ -1,10 +1,13 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using QualityProducts.Processors;
+using QualityProducts.Util;
 using StardewValley;
+using SObject = StardewValley.Object;
 
 namespace QualityProducts
 {
-    public abstract class Processor : StardewValley.Object
+    public abstract class Processor : SObject
     {
         public enum ProcessorType
         {
@@ -77,7 +80,7 @@ namespace QualityProducts
             return newObj;
         }
 
-        public static Processor FromObject(StardewValley.Object @object)
+        public static Processor FromObject(SObject @object)
         {
             if (!@object.bigCraftable.Value)
             {
@@ -110,22 +113,9 @@ namespace QualityProducts
         {
         }
 
-        /*
-        public override Item getOne()
+        public SObject ToObject()
         {
-            return Create(WhichProcessor(ParentSheetIndex).Value, processor =>
-            {
-                processor.TileLocation = tileLocation;
-                processor.IsRecipe = (bool)isRecipe;
-                processor.name = name;
-                processor.DisplayName = displayName;
-            });
-        }
-        */
-
-        public StardewValley.Object ToObject()
-        {
-            StardewValley.Object @object = new StardewValley.Object(tileLocation, parentSheetIndex, false)
+            SObject @object = new SObject(tileLocation, parentSheetIndex, false)
             {
                 IsRecipe = (bool)isRecipe,
                 name = name,
@@ -143,9 +133,9 @@ namespace QualityProducts
 
         public override bool performObjectDropInAction(Item dropInItem, bool probe, Farmer who)
         {
-            if (dropInItem is StardewValley.Object)
+            if (dropInItem is SObject)
             {
-                StardewValley.Object @object = dropInItem as StardewValley.Object;
+                SObject @object = dropInItem as SObject;
                 if (heldObject.Value != null)
                 {
                     return false;
@@ -168,6 +158,6 @@ namespace QualityProducts
             return false;
         }
 
-        protected abstract bool PerformProcessing(StardewValley.Object @object, bool probe, Farmer who);
+        protected abstract bool PerformProcessing(SObject @object, bool probe, Farmer who);
     }
 }

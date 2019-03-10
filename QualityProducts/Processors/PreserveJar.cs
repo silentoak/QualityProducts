@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
+using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace QualityProducts.Processors
 {
     public class PreserveJar : Processor
     {
@@ -19,12 +20,12 @@ namespace QualityProducts
             });
         }
 
-        protected override bool PerformProcessing(Object @object, bool probe, Farmer who)
+        protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch (@object.Category)
             {
                 case -75:
-                    heldObject.Value = new Object(Vector2.Zero, 342, "Pickled " + @object.Name, false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 342, "Pickled " + @object.Name, false, true, false, false)
                     {
                         Price = 50 + @object.Price * 2
                     };
@@ -38,7 +39,7 @@ namespace QualityProducts
                     }
                     return true;
                 case -79:
-                    heldObject.Value = new Object(Vector2.Zero, 344, @object.Name + " Jelly", false, true, false, false)
+                    heldObject.Value = new SObject(Vector2.Zero, 344, @object.Name + " Jelly", false, true, false, false)
                     {
                         Price = 50 + @object.Price * 2
                     };

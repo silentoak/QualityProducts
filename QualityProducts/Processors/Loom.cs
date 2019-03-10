@@ -1,7 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
+using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace QualityProducts.Processors
 {
     public class Loom : Processor
     {
@@ -9,11 +10,11 @@ namespace QualityProducts
         {
         }
 
-        protected override bool PerformProcessing(Object @object, bool probe, Farmer who)
+        protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             if (@object.ParentSheetIndex == 440)
             {
-                heldObject.Value = new Object(Vector2.Zero, 428, null, false, true, false, false);
+                heldObject.Value = new SObject(Vector2.Zero, 428, null, false, true, false, false);
                 if (!probe)
                 {
                     minutesUntilReady.Value = 240;
