@@ -4,22 +4,28 @@ using SObject = StardewValley.Object;
 
 namespace QualityProducts.Processors
 {
-    public class PreserveJar : Processor
+    internal class PreserveJar : Processor
     {
+        /****************
+         * Public methods
+         ****************/
+
         public PreserveJar() : base(ProcessorType.PRESERVE_JAR)
         {
         }
 
-        private void PerformGraphicsAndSounds(Farmer who, Color color)
-        {
-            who.currentLocation.playSound("Ship");
-            Multiplayer multiplayer = QualityProducts.Instance.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
-            multiplayer.broadcastSprites(who.currentLocation, new TemporaryAnimatedSprite("TileSheets\\animations", new Rectangle(256, 1856, 64, 128), 80f, 6, 999999, tileLocation.Value * 64f + new Vector2(0f, -128f), false, false, (tileLocation.Y + 1f) * 64f / 10000f + 0.0001f, 0f, color * 0.75f, 1f, 0f, 0f, 0f, false)
-            {
-                alphaFade = 0.005f
-            });
-        }
 
+        /*******************
+         * Protected methods
+         *******************/
+
+        /// <summary>
+        /// Performs item processing.
+        /// </summary>
+        /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
+        /// <param name="object">Object to be processed.</param>
+        /// <param name="probe">If set to <c>true</c> probe.</param>
+        /// <param name="who">Farmer that initiated processing.</param>
         protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch (@object.Category)
@@ -54,6 +60,21 @@ namespace QualityProducts.Processors
                     return true;
             }
             return false;
+        }
+
+
+        /*****************
+         * Private methods
+         *****************/
+
+        private void PerformGraphicsAndSounds(Farmer who, Color color)
+        {
+            who.currentLocation.playSound("Ship");
+            Multiplayer multiplayer = QualityProducts.Instance.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+            multiplayer.broadcastSprites(who.currentLocation, new TemporaryAnimatedSprite("TileSheets\\animations", new Rectangle(256, 1856, 64, 128), 80f, 6, 999999, tileLocation.Value * 64f + new Vector2(0f, -128f), false, false, (tileLocation.Y + 1f) * 64f / 10000f + 0.0001f, 0f, color * 0.75f, 1f, 0f, 0f, 0f, false)
+            {
+                alphaFade = 0.005f
+            });
         }
     }
 }

@@ -4,12 +4,28 @@ using SObject = StardewValley.Object;
 
 namespace QualityProducts.Processors
 {
-    public class CheesePress : Processor
+    internal class CheesePress : Processor
     {
+        /****************
+         * Public methods
+         ****************/
+
         public CheesePress() : base(ProcessorType.CHEESE_PRESS)
         {
         }
 
+
+        /*******************
+         * Protected methods
+         *******************/
+        
+         /// <summary>
+        /// Performs item processing.
+        /// </summary>
+        /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
+        /// <param name="object">Object to be processed.</param>
+        /// <param name="probe">If set to <c>true</c> probe.</param>
+        /// <param name="who">Farmer that initiated processing.</param>
         protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             switch (@object.ParentSheetIndex)

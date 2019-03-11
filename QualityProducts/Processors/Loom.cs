@@ -4,12 +4,28 @@ using SObject = StardewValley.Object;
 
 namespace QualityProducts.Processors
 {
-    public class Loom : Processor
+    internal class Loom : Processor
     {
+        /****************
+         * Public methods
+         ****************/
+
         public Loom() : base(ProcessorType.LOOM)
         {
         }
 
+
+        /*******************
+         * Protected methods
+         *******************/
+
+        /// <summary>
+        /// Performs item processing.
+        /// </summary>
+        /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
+        /// <param name="object">Object to be processed.</param>
+        /// <param name="probe">If set to <c>true</c> probe.</param>
+        /// <param name="who">Farmer that initiated processing.</param>
         protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
             if (@object.ParentSheetIndex == 440)
