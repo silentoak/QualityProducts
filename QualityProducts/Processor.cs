@@ -10,11 +10,13 @@ namespace QualityProducts
     /// <summary>
     /// An entity that is capable of processing items into products.
     /// </summary>
-    internal abstract class Processor : SObject
+    public abstract class Processor : SObject
     {
         /****************
          * Public methods
          ****************/
+
+        public static readonly string ProcessorNameSuffix = " [Processor]";
 
         public enum ProcessorType
         {
@@ -237,7 +239,7 @@ namespace QualityProducts
         /// <param name="name">Object name.</param>
         private static string ToProcessorName(string name)
         {
-            return name + " [Processor]";
+            return name + ProcessorNameSuffix;
         }
     }
 }
