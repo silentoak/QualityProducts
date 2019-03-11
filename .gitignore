@@ -2,5 +2,5 @@
 */obj/
 packages*
 .vs
-*.csproj*
-*.sln
+*.csproj.user
+
