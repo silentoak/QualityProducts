@@ -18,8 +18,11 @@ namespace QualityProducts.Processors
         /*******************
          * Protected methods
          *******************/
-        
-         /// <summary>
+
+        /***
+         * From StardewValley.Object.performObjectDropInAction
+         ***/
+        /// <summary>
         /// Performs item processing.
         /// </summary>
         /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
