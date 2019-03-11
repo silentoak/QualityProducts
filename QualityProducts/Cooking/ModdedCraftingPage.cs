@@ -106,7 +106,6 @@ namespace QualityProducts.Cooking
             }
             else
             {
-                Game1.playSound("bigSelect");
                 enumerator = CraftingRecipe.cookingRecipes.Keys.GetEnumerator();
                 try
                 {
