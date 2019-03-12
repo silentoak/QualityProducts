@@ -20,8 +20,8 @@ namespace AutoQualityPatch
                 {
                     case "Keg":
                         return new AutomatableKeg(obj, location, tile);
-                    case "Preserve Jar":
-                        return new AutomatablePreserveJar(obj, location, tile);
+                    case "Preserves Jar":
+                        return new AutomatablePreservesJar(obj, location, tile);
                     case "Cheese Press":
                         return new AutomatableCheesePress(obj, location, tile);
                     case "Loom":

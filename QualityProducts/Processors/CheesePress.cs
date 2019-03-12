@@ -14,7 +14,6 @@ namespace QualityProducts.Processors
         {
         }
 
-
         /*******************
          * Protected methods
          *******************/
@@ -73,6 +72,25 @@ namespace QualityProducts.Processors
                     return true;
             }
             return false;
+        }
+
+        /***
+         * From StardewValley.Object.checkForAction
+         ***/
+        /// <summary>
+        /// Updates the game stats.
+        /// </summary>
+        /// <param name="object">Previously held object.</param>
+        protected override void UpdateStats(SObject @object)
+        {
+            if (@object.ParentSheetIndex == 426)
+            {
+                Game1.stats.GoatCheeseMade++;
+            }
+            else
+            {
+                Game1.stats.CheeseMade++;
+            }
         }
     }
 }

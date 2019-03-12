@@ -12,16 +12,25 @@ namespace QualityProducts
     /// </summary>
     public abstract class Processor : SObject
     {
+        /*********
+         * Fields
+         *********/
+
+        /// <summary>Suffix identifier for processors</summary>
+        public static readonly string ProcessorNameSuffix = " [Processor]";
+
+        /// <summary>The base name.</summary>
+        private string baseName;
+
+
         /****************
          * Public methods
          ****************/
 
-        public static readonly string ProcessorNameSuffix = " [Processor]";
-
         public enum ProcessorType
         {
             KEG = 12,
-            PRESERVE_JAR = 15,
+            PRESERVES_JAR = 15,
             CHEESE_PRESS = 16,
             LOOM = 17,
             OIL_MAKER = 19,
@@ -54,8 +63,8 @@ namespace QualityProducts
             {
                 case ProcessorType.KEG:
                     return new Keg();
-                case ProcessorType.PRESERVE_JAR:
-                    return new PreserveJar();
+                case ProcessorType.PRESERVES_JAR:
+                    return new PreservesJar();
                 case ProcessorType.CHEESE_PRESS:
                     return new CheesePress();
                 case ProcessorType.LOOM:
@@ -83,8 +92,8 @@ namespace QualityProducts
                 case ProcessorType.KEG:
                     newObj = new Keg();
                     break;
-                case ProcessorType.PRESERVE_JAR:
-                    newObj = new PreserveJar();
+                case ProcessorType.PRESERVES_JAR:
+                    newObj = new PreservesJar();
                     break;
                 case ProcessorType.CHEESE_PRESS:
                     newObj = new CheesePress();
@@ -170,7 +179,7 @@ namespace QualityProducts
         /// <param name="dropInItem">Drop in item.</param>
         /// <param name="probe">If set to <c>true</c> probe.</param>
         /// <param name="who">Who.</param>
-        public override bool performObjectDropInAction(Item dropInItem, bool probe, Farmer who)
+        public sealed override bool performObjectDropInAction(Item dropInItem, bool probe, Farmer who)
         {
             if (dropInItem is SObject)
             {
@@ -202,6 +211,65 @@ namespace QualityProducts
             return false;
         }
 
+        /***
+         * Modified from StardewValley.Object.checkForAction
+         ***/
+        public sealed override bool checkForAction(Farmer who, bool justCheckingForActivity = false)
+        {
+            if (!justCheckingForActivity && who != null
+                && who.currentLocation.isObjectAtTile(who.getTileX(), who.getTileY() - 1)
+                && who.currentLocation.isObjectAtTile(who.getTileX(), who.getTileY() + 1)
+                && who.currentLocation.isObjectAtTile(who.getTileX() + 1, who.getTileY())
+                && who.currentLocation.isObjectAtTile(who.getTileX() - 1, who.getTileY())
+                && !who.currentLocation.getObjectAtTile(who.getTileX(), who.getTileY() - 1).isPassable() && !who.currentLocation.getObjectAtTile(who.getTileX(), who.getTileY() + 1).isPassable() && !who.currentLocation.getObjectAtTile(who.getTileX() - 1, who.getTileY()).isPassable() && !who.currentLocation.getObjectAtTile(who.getTileX() + 1, who.getTileY()).isPassable())
+            {
+                performToolAction(null, who.currentLocation);
+            }
+
+            if ((bool)readyForHarvest)
+            {
+                if (justCheckingForActivity)
+                {
+                    return true;
+                }
+
+                if (who.IsLocalPlayer)
+                {
+                    SObject value2 = heldObject.Value;
+                    heldObject.Value = null;
+                    if (!who.addItemToInventoryBool(value2, false))
+                    {
+                        heldObject.Value = value2;
+                        Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Crop.cs.588"));
+                        return false;
+                    }
+                    Game1.playSound("coin");
+                    UpdateStats(value2);
+                }
+
+                heldObject.Value = null;
+                readyForHarvest.Value = false;
+                showNextIndex.Value = false;
+                return true;
+            }
+            return false;
+        }
+
+        /***
+         * Modified from StardewValley.Object.addWorkingAnimation
+         **/
+        /// <summary>
+        /// Adds this entity's working animation to the specified game location.
+        /// </summary>
+        /// <param name="environment">Game location.</param>
+        public sealed override void addWorkingAnimation(GameLocation environment)
+        {
+            if (environment != null && environment.farmers.Count != 0)
+            {
+                AddWorkingAnimationTo(environment);
+            }
+        }
+
 
         /*******************
          * Protected methods
@@ -222,15 +290,29 @@ namespace QualityProducts
         /// <param name="who">Farmer that initiated processing.</param>
         protected abstract bool PerformProcessing(SObject @object, bool probe, Farmer who);
 
+        /// <summary>
+        /// Updates the game stats.
+        /// </summary>
+        /// <param name="object">Previously held object.</param>
+        protected virtual void UpdateStats(SObject @object)
+        {
+            return; 
+        }
+
+        /// <summary>
+        /// Adds this entity's working animation to the specified game location.
+        /// </summary>
+        /// <param name="environment">Game location.</param>
+        protected virtual void AddWorkingAnimationTo(GameLocation environment)
+        {
+            // no working animation
+            return; 
+        }
+
 
         /******************
          * Private methods
          ******************/
-        
-        /// <summary>
-        /// The base name.
-        /// </summary>
-        private string baseName;
 
         /// <summary>
         /// Converts name of the object to name of corresponding processor.

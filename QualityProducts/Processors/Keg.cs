@@ -31,7 +31,7 @@ namespace QualityProducts.Processors
         /// <param name="who">Farmer that initiated processing.</param>
         protected override bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
-            switch ((int)@object.parentSheetIndex)
+            switch (@object.ParentSheetIndex)
             {
                 case 262:
                     heldObject.Value = new SObject(Vector2.Zero, 346, "Beer", false, true, false, false);
@@ -39,7 +39,9 @@ namespace QualityProducts.Processors
                     {
                         heldObject.Value.name = "Beer";
                         minutesUntilReady.Value = 1750;
-                        PerformGraphicsAndSounds(who, Color.Yellow);
+                        who.currentLocation.playSound("Ship");
+                        who.currentLocation.playSound("bubbles");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.Yellow));
                     }
                     return true;
                 case 304:
@@ -48,7 +50,9 @@ namespace QualityProducts.Processors
                     {
                         heldObject.Value.name = "Pale Ale";
                         minutesUntilReady.Value = 2250;
-                        PerformGraphicsAndSounds(who, Color.Yellow);
+                        who.currentLocation.playSound("Ship");
+                        who.currentLocation.playSound("bubbles");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.Yellow));
                     }
                     return true;
                 case 433:
@@ -67,7 +71,9 @@ namespace QualityProducts.Processors
                             who.removeItemFromInventory(@object);
                         }
                         minutesUntilReady.Value = 120;
-                        PerformGraphicsAndSounds(who, Color.DarkGray);
+                        who.currentLocation.playSound("Ship");
+                        who.currentLocation.playSound("bubbles");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.DarkGray));
                     }
                     return true;
                 case 340:
@@ -76,7 +82,9 @@ namespace QualityProducts.Processors
                     {
                         heldObject.Value.name = "Mead";
                         minutesUntilReady.Value = 600;
-                        PerformGraphicsAndSounds(who, Color.Yellow);
+                        who.currentLocation.playSound("Ship");
+                        who.currentLocation.playSound("bubbles");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.Yellow));
                     }
                     return true;
             }
@@ -93,7 +101,9 @@ namespace QualityProducts.Processors
                         heldObject.Value.preserve.Value = PreserveType.Juice;
                         heldObject.Value.preservedParentSheetIndex.Value = @object.parentSheetIndex;
                         minutesUntilReady.Value = 6000;
-                        PerformGraphicsAndSounds(who, Color.White);
+                        who.currentLocation.playSound("Ship");
+                        who.currentLocation.playSound("bubbles");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.White));
                     }
                     return true;
                 case -79:
@@ -107,27 +117,52 @@ namespace QualityProducts.Processors
                         heldObject.Value.preserve.Value = PreserveType.Wine;
                         heldObject.Value.preservedParentSheetIndex.Value = @object.parentSheetIndex;
                         minutesUntilReady.Value = 10000;
-                        PerformGraphicsAndSounds(who, Color.Lavender);
+                        who.currentLocation.playSound("Ship");
+                        who.currentLocation.playSound("bubbles");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.Lavender));
                     }
                     return true;
             }
             return false;
         }
 
-
-        /*****************
-         * Private methods
-         *****************/
-
-        private void PerformGraphicsAndSounds(Farmer who, Color color)
+        /***
+         * From StardewValley.Object.checkForAction
+         ***/
+        /// <summary>
+        /// Updates the game stats.
+        /// </summary>
+        /// <param name="object">Previously held object.</param>
+        protected override void UpdateStats(SObject @object)
         {
-            who.currentLocation.playSound("Ship");
-            who.currentLocation.playSound("bubbles");
-            Multiplayer multiplayer = QualityProducts.Instance.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
-            multiplayer.broadcastSprites(who.currentLocation, new TemporaryAnimatedSprite("TileSheets\\animations", new Rectangle(256, 1856, 64, 128), 80f, 6, 999999, tileLocation.Value * 64f + new Vector2(0f, -128f), false, false, (tileLocation.Y + 1f) * 64f / 10000f + 0.0001f, 0f, color * 0.75f, 1f, 0f, 0f, 0f, false)
+            Game1.stats.BeveragesMade++;
+        }
+
+        /***
+         * From StardewValley.Object.addWorkingAnimation
+         ***/
+        /// <summary>
+        /// Adds this entity's working animation to the specified game location.
+        /// </summary>
+        /// <param name="environment">Game location.</param>
+        protected override void AddWorkingAnimationTo(GameLocation environment)
+        {
+            Color color = Color.DarkGray;
+            if (heldObject.Value.Name.Contains("Wine"))
             {
-                alphaFade = 0.005f
-            });
+                color = Color.Lavender;
+            }
+            else if (heldObject.Value.Name.Contains("Juice"))
+            {
+                color = Color.White;
+            }
+            else if (heldObject.Value.name.Equals("Beer"))
+            {
+                color = Color.Yellow;
+            }
+
+            environment.playSound("bubbles");
+            Animation.PerformGraphics(environment, Animation.Bubbles(TileLocation, color));
         }
     }
 }

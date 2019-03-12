@@ -9,7 +9,7 @@ using SObject = StardewValley.Object;
  ***/
 namespace AutoQualityPatch.Automatables
 {
-    internal class AutomatablePreserveJar : AutomatableBase
+    internal class AutomatablePreservesJar : AutomatableBase
     {
         /*********
          * Fields
@@ -67,7 +67,7 @@ namespace AutoQualityPatch.Automatables
          * Internal methods
          *******************/
 
-        internal AutomatablePreserveJar(SObject entity, GameLocation location, Vector2 tile) : base(entity, location, tile)
+        internal AutomatablePreservesJar(SObject entity, GameLocation location, Vector2 tile) : base(entity, location, tile)
         {
         }
     }
