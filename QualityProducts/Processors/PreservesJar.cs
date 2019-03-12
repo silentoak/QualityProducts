@@ -4,13 +4,13 @@ using SObject = StardewValley.Object;
 
 namespace QualityProducts.Processors
 {
-    internal class PreserveJar : Processor
+    internal class PreservesJar : Processor
     {
         /****************
          * Public methods
          ****************/
 
-        public PreserveJar() : base(ProcessorType.PRESERVE_JAR)
+        public PreservesJar() : base(ProcessorType.PRESERVES_JAR)
         {
         }
 
@@ -44,7 +44,8 @@ namespace QualityProducts.Processors
                         heldObject.Value.preserve.Value = PreserveType.Pickle;
                         heldObject.Value.preservedParentSheetIndex.Value = @object.parentSheetIndex;
                         minutesUntilReady.Value = 4000;
-                        PerformGraphicsAndSounds(who, Color.White);
+                        who.currentLocation.playSound("Ship");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.White));
                     }
                     return true;
                 case -79:
@@ -58,26 +59,46 @@ namespace QualityProducts.Processors
                         heldObject.Value.name = @object.Name + " Jelly";
                         heldObject.Value.preserve.Value = PreserveType.Jelly;
                         heldObject.Value.preservedParentSheetIndex.Value = @object.parentSheetIndex;
-                        PerformGraphicsAndSounds(who, Color.LightBlue);
+                        who.currentLocation.playSound("Ship");
+                        Animation.PerformGraphics(who.currentLocation, Animation.Bubbles(TileLocation, Color.LightBlue));
                     }
                     return true;
             }
             return false;
         }
 
-
-        /*****************
-         * Private methods
-         *****************/
-
-        private void PerformGraphicsAndSounds(Farmer who, Color color)
+        /***
+         * From StardewValley.Object.checkForAction
+         ***/
+        /// <summary>
+        /// Updates the game stats.
+        /// </summary>
+        /// <param name="object">Previously held object.</param>
+        protected override void UpdateStats(SObject @object)
         {
-            who.currentLocation.playSound("Ship");
-            Multiplayer multiplayer = QualityProducts.Instance.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
-            multiplayer.broadcastSprites(who.currentLocation, new TemporaryAnimatedSprite("TileSheets\\animations", new Rectangle(256, 1856, 64, 128), 80f, 6, 999999, tileLocation.Value * 64f + new Vector2(0f, -128f), false, false, (tileLocation.Y + 1f) * 64f / 10000f + 0.0001f, 0f, color * 0.75f, 1f, 0f, 0f, 0f, false)
+            Game1.stats.PreservesMade++;
+        }
+
+        /***
+         * From StardewValley.Object.addWorkingAnimation
+         ***/
+        /// <summary>
+        /// Adds this entity's working animation to the specified game location.
+        /// </summary>
+        /// <param name="environment">Game location.</param>
+        protected override void AddWorkingAnimationTo(GameLocation environment)
+        {
+            Color color = Color.White;
+            if (heldObject.Value.Name.Contains("Pickled"))
             {
-                alphaFade = 0.005f
-            });
+                color = Color.White;
+            }
+            else if (heldObject.Value.Name.Contains("Jelly"))
+            {
+                color = Color.LightBlue;
+            }
+
+            Animation.PerformGraphics(environment, Animation.Bubbles(TileLocation, color));
         }
     }
 }

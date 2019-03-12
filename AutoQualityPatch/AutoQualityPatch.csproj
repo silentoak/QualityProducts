@@ -30,6 +30,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="Automate">
+      <HintPath>..\lib\Automate\Automate.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -41,7 +45,7 @@
     <Compile Include="Automatables\AutomatableLoom.cs" />
     <Compile Include="Automatables\AutomatableMayonnaiseMachine.cs" />
     <Compile Include="Automatables\AutomatableOilMaker.cs" />
-    <Compile Include="Automatables\AutomatablePreserveJar.cs" />
+    <Compile Include="Automatables\AutomatablePreservesJar.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
