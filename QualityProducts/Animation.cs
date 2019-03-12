@@ -1,10 +1,9 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using StardewValley;
 
 namespace QualityProducts
 {
-    public static class Animation
+    internal static class Animation
     {
         public static TemporaryAnimatedSprite Bubbles(Vector2 position, Color color)
         {
