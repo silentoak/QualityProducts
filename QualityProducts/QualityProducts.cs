@@ -15,6 +15,25 @@ namespace QualityProducts
     /// </summary>
     internal class QualityProducts : Mod
     {
+        /*********
+         * Fields
+         *********/
+
+        internal readonly Dictionary<GameLocation, List<Processor>> locationProcessors = new Dictionary<GameLocation, List<Processor>>(new ObjectReferenceComparer<GameLocation>());
+
+
+        /************
+         * Properties      
+         ************/
+
+        internal static QualityProducts Instance { get; private set; }
+
+        internal static bool HasAutomate { get; private set; }
+
+        /// <summary>The mod configuration from the player.</summary>
+        private QualityProductsConfig Config;
+
+
         /****************
          * Public methods
          ****************/
@@ -23,22 +42,21 @@ namespace QualityProducts
         {
             Instance = this;
 
-            Helper.Events.Display.MenuChanged += OnCrafting;
+            HasAutomate = Helper.ModRegistry.IsLoaded("Pathoschild.Automate");
+
+            Config = Helper.ReadConfig<QualityProductsConfig>();
+
+            if (Config.EnableQualityCooking)
+            {
+                Helper.Events.Display.MenuChanged += OnCrafting;
+            }
+
             Helper.Events.GameLoop.Saved += OnSaved;
             Helper.Events.GameLoop.Saving += OnSaving;
             Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             Helper.Events.World.LocationListChanged += OnLoadLocation;
             Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
         }
-
-
-        /*****************
-         * Internal fields
-         ******************/
-
-        internal static QualityProducts Instance { get; private set; }
-
-        internal readonly Dictionary<GameLocation, List<Processor>> locationProcessors = new Dictionary<GameLocation, List<Processor>>(new ObjectReferenceComparer<GameLocation>());
 
 
         /*****************

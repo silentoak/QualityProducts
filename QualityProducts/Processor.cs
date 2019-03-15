@@ -17,7 +17,13 @@ namespace QualityProducts
          *********/
 
         /// <summary>Suffix identifier for processors</summary>
-        public static readonly string ProcessorNameSuffix = " [Processor]";
+        public static string ProcessorNameSuffix
+        {
+            get
+            {
+                return QualityProducts.HasAutomate ? " [Processor]" : "";
+            }
+        }
 
         /// <summary>The base name.</summary>
         private string baseName;

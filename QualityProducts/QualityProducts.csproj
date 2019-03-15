@@ -46,6 +46,7 @@
     <Compile Include="Util\ObjectReferenceComparer.cs" />
     <Compile Include="Util\UnimplementedCaseException.cs" />
     <Compile Include="Animation.cs" />
+    <Compile Include="QualityProductsConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
