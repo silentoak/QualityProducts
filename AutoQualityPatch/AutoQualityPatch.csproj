@@ -33,6 +33,7 @@
     <Reference Include="Automate">
       <HintPath>..\lib\Automate\Automate.dll</HintPath>
       <Private>False</Private>
+      <IncludeInPackage>false</IncludeInPackage>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -56,6 +57,7 @@
       <Project>{B43C6CA7-768F-4E67-9BCE-53F9CA713D79}</Project>
       <Name>QualityProducts</Name>
       <Private>False</Private>
+      <IncludeInPackage>false</IncludeInPackage>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
