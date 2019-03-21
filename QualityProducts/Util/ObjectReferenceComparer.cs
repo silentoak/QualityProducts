@@ -5,7 +5,7 @@ using System.Collections.Generic;
  * From Pathoschild.Stardew.Common.Utilities
  * see https://github.com/Pathoschild/StardewMods/blob/595c21818eea6ace20280180b17004153e9dacee/Common/Utilities/ObjectReferenceComparer.cs
  **/
-namespace QualityProducts.Util
+namespace SilentOak.QualityProducts.Util
 {
     /// <summary>A comparer which considers two references equal if they point to the same instance.</summary>
     /// <typeparam name="T">The value type.</typeparam>

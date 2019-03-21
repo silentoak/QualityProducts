@@ -1,38 +1,49 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
-using QualityProducts.Processors;
-using QualityProducts.Util;
+using SilentOak.QualityProducts.Processors;
+using SilentOak.QualityProducts.Util;
 using StardewValley;
 using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace SilentOak.QualityProducts
 {
     /// <summary>
     /// An entity that is capable of processing items into products.
     /// </summary>
     public abstract class Processor : SObject
     {
+        /*************
+         * Properties
+         *************/
+
+        /// <summary>
+        /// Gets the location this instance is in.
+        /// </summary>
+        /// <value>The location.</value>
+        public GameLocation Location { get; }
+
+        /// <summary>
+        /// Gets the available recipes for this entity.
+        /// </summary>
+        /// <value>The recipes.</value>
+        public abstract IEnumerable<Recipe> Recipes { get; }
+
+        /// <summary>
+        /// Gets or sets the current recipe.
+        /// </summary>
+        /// <value>The current recipe.</value>
+        private Recipe CurrentRecipe { get; set; }
+
+
         /*********
-         * Fields
-         *********/
+         * Types
+         ********/
 
-        /// <summary>Suffix identifier for processors</summary>
-        public static string ProcessorNameSuffix
-        {
-            get
-            {
-                return QualityProducts.HasAutomate ? " [Processor]" : "";
-            }
-        }
-
-        /// <summary>The base name.</summary>
-        private string baseName;
-
-
-        /****************
-         * Public methods
-         ****************/
-
+        /// <summary>
+        /// The available processor types.
+        /// </summary>
         public enum ProcessorType
         {
             KEG = 12,
@@ -42,6 +53,11 @@ namespace QualityProducts
             OIL_MAKER = 19,
             MAYONNAISE_MACHINE = 24
         }
+
+
+        /****************
+         * Public methods
+         ****************/
 
         /// <summary>
         /// Gets the type of the processor for the corresponding index.
@@ -63,22 +79,22 @@ namespace QualityProducts
         /// </summary>
         /// <returns>The new processor instance.</returns>
         /// <param name="processorType">Processor type to be instantiated.</param>
-        public static Processor Create(ProcessorType processorType)
+        public static Processor Create(ProcessorType processorType, GameLocation location)
         {
             switch (processorType)
             {
                 case ProcessorType.KEG:
-                    return new Keg();
+                    return new Keg(location);
                 case ProcessorType.PRESERVES_JAR:
-                    return new PreservesJar();
+                    return new PreservesJar(location);
                 case ProcessorType.CHEESE_PRESS:
-                    return new CheesePress();
+                    return new CheesePress(location);
                 case ProcessorType.LOOM:
-                    return new Loom();
+                    return new Loom(location);
                 case ProcessorType.OIL_MAKER:
-                    return new OilMaker();
+                    return new OilMaker(location);
                 case ProcessorType.MAYONNAISE_MACHINE:
-                    return new MayonnaiseMachine();
+                    return new MayonnaiseMachine(location);
                 default:
                     throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorType), processorType)} of Processor.ValidType has no corresponding case");
             }
@@ -90,32 +106,9 @@ namespace QualityProducts
         /// <returns>The new processor instance.</returns>
         /// <param name="processorType">Processor type to be instantiated.</param>
         /// <param name="initializer">Initializer.</param>
-        public static Processor Create(ProcessorType processorType, Action<Processor> initializer)
+        public static Processor Create(ProcessorType processorType, GameLocation location, Action<Processor> initializer)
         {
-            Processor newObj;
-            switch (processorType)
-            {
-                case ProcessorType.KEG:
-                    newObj = new Keg();
-                    break;
-                case ProcessorType.PRESERVES_JAR:
-                    newObj = new PreservesJar();
-                    break;
-                case ProcessorType.CHEESE_PRESS:
-                    newObj = new CheesePress();
-                    break;
-                case ProcessorType.LOOM:
-                    newObj = new Loom();
-                    break;
-                case ProcessorType.OIL_MAKER:
-                    newObj = new OilMaker();
-                    break;
-                case ProcessorType.MAYONNAISE_MACHINE:
-                    newObj = new MayonnaiseMachine();
-                    break;
-                default:
-                    throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorType), processorType)} of Processor.ValidType has no corresponding case");
-            }
+            Processor newObj = Create(processorType, location);
             initializer(newObj);
             return newObj;
         }
@@ -125,7 +118,7 @@ namespace QualityProducts
         /// </summary>
         /// <returns>The new processor instance.</returns>
         /// <param name="object">Reference object.</param>
-        public static Processor FromObject(SObject @object)
+        public static Processor FromObject(SObject @object, GameLocation location)
         {
             if (!@object.bigCraftable.Value)
             {
@@ -134,7 +127,7 @@ namespace QualityProducts
 
             ProcessorType? processorType = GetProcessorType(@object.ParentSheetIndex);
             if (processorType != null) {
-                Processor processor = Create(processorType.Value,
+                Processor processor = Create(processorType.Value, location,
                 p => 
                 {
                     p.TileLocation = @object.TileLocation;
@@ -162,7 +155,7 @@ namespace QualityProducts
             SObject @object = new SObject(tileLocation, parentSheetIndex, false)
             {
                 IsRecipe = (bool)isRecipe,
-                Name = baseName,
+                Name = Name,
                 DisplayName = base.DisplayName,
                 Scale = Scale,
                 MinutesUntilReady = MinutesUntilReady
@@ -187,11 +180,11 @@ namespace QualityProducts
         /// <param name="who">Who.</param>
         public sealed override bool performObjectDropInAction(Item dropInItem, bool probe, Farmer who)
         {
-            if (dropInItem is SObject)
+            if (dropInItem is SObject @object)
             {
-                SObject @object = dropInItem as SObject;
                 if (heldObject.Value != null)
                 {
+                    ModEntry.StaticMonitor.VerboseLog($"{Name} already has object {heldObject.Value.Name}"); 
                     return false;
                 }
                 if (@object != null && (bool)@object.bigCraftable)
@@ -205,11 +198,10 @@ namespace QualityProducts
 
                 if (PerformProcessing(@object, probe, who))
                 {
-                    heldObject.Value.Quality = @object.Quality;
                     if (!probe)
                     {
-                        QualityProducts.Instance.Monitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
-                        QualityProducts.Instance.Monitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
+                        ModEntry.StaticMonitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
+                        ModEntry.StaticMonitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
                     }
                     return true;
                 }
@@ -220,6 +212,12 @@ namespace QualityProducts
         /***
          * Modified from StardewValley.Object.checkForAction
          ***/
+        /// <summary>
+        /// Checks for action, executing if available when <paramref name="justCheckingForActivity"/> is false.
+        /// </summary>
+        /// <returns><c>true</c>, if action was performed, <c>false</c> otherwise.</returns>
+        /// <param name="who">Farmer that requested for action.</param>
+        /// <param name="justCheckingForActivity">If set to <c>true</c>, doesn't execute any available action.</param>
         public sealed override bool checkForAction(Farmer who, bool justCheckingForActivity = false)
         {
             if (!justCheckingForActivity && who != null
@@ -265,15 +263,36 @@ namespace QualityProducts
          * Modified from StardewValley.Object.addWorkingAnimation
          **/
         /// <summary>
-        /// Adds this entity's working animation to the specified game location.
+        /// Adds this entity's working animation to its location.
         /// </summary>
         /// <param name="environment">Game location.</param>
         public sealed override void addWorkingAnimation(GameLocation environment)
         {
             if (environment != null && environment.farmers.Count != 0)
             {
-                AddWorkingAnimationTo(environment);
+                AddWorkingEffects();
             }
+        }
+
+
+        /*******************
+         * Internal methods
+         *******************/
+
+        /// <summary>
+        /// Returns a function that executes the same process as the given one,
+        /// but adds the ingredient's quality to the final product.
+        /// </summary>
+        /// <returns>The modified processing function.</returns>
+        /// <param name="process">Function that transforms ingredients into products.</param>
+        public static Func<SObject, SObject> WithQuality(Func<SObject, SObject> process)
+        {
+            return input =>
+            {
+                SObject output = process(input);
+                output.Quality = input.Quality;
+                return output;
+            };
         }
 
 
@@ -281,20 +300,15 @@ namespace QualityProducts
          * Protected methods
          *******************/
 
-        protected Processor(ProcessorType processorType) : base(Vector2.Zero, (int)processorType, false)
-        {
-            baseName = base.Name;
-            Name = ToProcessorName(baseName);
-        }
-
         /// <summary>
-        /// Performs item processing.
+        /// Instantiates a <see cref="T:QualityProducts.Processor"/> of the given type.
         /// </summary>
-        /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
-        /// <param name="object">Object to be processed.</param>
-        /// <param name="probe">If set to <c>true</c> probe.</param>
-        /// <param name="who">Farmer that initiated processing.</param>
-        protected abstract bool PerformProcessing(SObject @object, bool probe, Farmer who);
+        /// <param name="processorType">Processor type.</param>
+        /// <param name="location">Where the entity is.</param>
+        protected Processor(ProcessorType processorType, GameLocation location) : base(Vector2.Zero, (int)processorType, false)
+        {
+            Location = location;
+        }
 
         /// <summary>
         /// Updates the game stats.
@@ -306,13 +320,19 @@ namespace QualityProducts
         }
 
         /// <summary>
-        /// Adds this entity's working animation to the specified game location.
+        /// Executes if recipe doesn't specify any input effects
         /// </summary>
-        /// <param name="environment">Game location.</param>
-        protected virtual void AddWorkingAnimationTo(GameLocation environment)
+        protected virtual void DefaultInputEffects()
         {
-            // no working animation
-            return; 
+            Location.playSound("Ship");
+        }
+
+        /// <summary>
+        /// Executes if recipe doesn't specify any working effects
+        /// </summary>
+        protected virtual void DefaultWorkingEffects()
+        {
+            return;
         }
 
 
@@ -321,13 +341,80 @@ namespace QualityProducts
          ******************/
 
         /// <summary>
-        /// Converts name of the object to name of corresponding processor.
+        /// Performs item processing.
         /// </summary>
-        /// <returns>The processor name.</returns>
-        /// <param name="name">Object name.</param>
-        private static string ToProcessorName(string name)
+        /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
+        /// <param name="object">Object to be processed.</param>
+        /// <param name="probe">If set to <c>true</c>, don't do anything.</param>
+        /// <param name="who">Farmer that initiated processing.</param>
+        private bool PerformProcessing(SObject @object, bool probe, Farmer who)
         {
-            return name + ProcessorNameSuffix;
+            CurrentRecipe = Recipes.FirstOrDefault(recipe => recipe.AcceptsInput(@object));
+
+            if (CurrentRecipe == null)
+            {
+                return false;
+            }
+
+            if (!probe)
+            {
+                int amount = CurrentRecipe.GetAmount(@object);
+                if (amount > @object.Stack)
+                {
+                    CurrentRecipe.FailAmount();
+                    return false;
+                }
+
+                @object.Stack -= amount;
+                if (@object.Stack <= 0)
+                {
+                    who.removeItemFromInventory(@object);
+                }
+
+                heldObject.Value = WithQuality(CurrentRecipe.Process)(@object);
+                minutesUntilReady.Value = CurrentRecipe.Minutes;
+                AddInputEffects();
+                AddWorkingEffects();
+            }
+
+            return true;
         }
+
+        /// <summary>
+        ///  Adds this entity's input animation to its location
+        /// </summary>
+        private void AddInputEffects()
+        {
+            if (CurrentRecipe != null)
+            {
+                if (CurrentRecipe.InputEffects != null)
+                {
+                    CurrentRecipe.InputEffects(Location, TileLocation);
+                }
+                else
+                {
+                    DefaultInputEffects();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds this entity's working animation to its location.
+        /// </summary>
+        private void AddWorkingEffects()
+        {
+            if (CurrentRecipe != null)
+            {
+                if (CurrentRecipe.WorkingEffects != null)
+                {
+                    CurrentRecipe.WorkingEffects(Location, TileLocation);
+                }
+                else
+                {
+                    DefaultWorkingEffects();
+                }
+            }
+        }
+
     }
 }

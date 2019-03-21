@@ -1,19 +1,21 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using QualityProducts.Cooking;
-using QualityProducts.Util;
+using SilentOak.Patching;
+using SilentOak.QualityProducts.Patches.BetterMeadIcons;
+using SilentOak.QualityProducts.Util;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
 using SObject = StardewValley.Object;
 
-namespace QualityProducts
+namespace SilentOak.QualityProducts
 {
     /// <summary>
     /// Mod entry.
     /// </summary>
-    internal class QualityProducts : Mod
+    internal class ModEntry : Mod
     {
         /*********
          * Fields
@@ -26,9 +28,8 @@ namespace QualityProducts
          * Properties      
          ************/
 
-        internal static QualityProducts Instance { get; private set; }
-
-        internal static bool HasAutomate { get; private set; }
+        internal static IModHelper StaticHelper { get; private set; }
+        internal static IMonitor StaticMonitor { get; private set; }
 
         /// <summary>The mod configuration from the player.</summary>
         private QualityProductsConfig Config;
@@ -40,9 +41,8 @@ namespace QualityProducts
 
         public override void Entry(IModHelper helper)
         {
-            Instance = this;
-
-            HasAutomate = Helper.ModRegistry.IsLoaded("Pathoschild.Automate");
+            StaticHelper = Helper;
+            StaticMonitor = Monitor;
 
             Config = Helper.ReadConfig<QualityProductsConfig>();
 
@@ -56,6 +56,17 @@ namespace QualityProducts
             Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             Helper.Events.World.LocationListChanged += OnLoadLocation;
             Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
+
+            if (Config.EnableMeadTextures && SpriteLoader.Init(Helper, Monitor, Config))
+            {
+                PatchManager.ApplyAll(
+                    typeof(SObjectDrawPatch),
+                    typeof(SObjectDraw2Patch),
+                    typeof(SObjectDrawInMenuPatch),
+                    typeof(SObjectDrawWhenHeld),
+                    typeof(FurnitureDrawPatch)
+                );
+            }
         }
 
 
@@ -73,7 +84,7 @@ namespace QualityProducts
         {
             foreach (T @object in objects)
             {
-                Monitor.VerboseLog($"Placing {@object.Name} at {gameLocation.Name}({@object.TileLocation.X},{@object.TileLocation.Y})");
+                Monitor.VerboseLog($"Placing `{@object.Name}`:{@object.GetType().Name} at {gameLocation.Name}({@object.TileLocation.X},{@object.TileLocation.Y})");
                 gameLocation.setObject(@object.TileLocation, @object);
             }
         }
@@ -109,7 +120,7 @@ namespace QualityProducts
                 {
                     if (@object.bigCraftable.Value && Processor.GetProcessorType(@object.ParentSheetIndex) != null && !(@object is Processor))
                     {
-                        Processor processor = Processor.FromObject(@object);
+                        Processor processor = Processor.FromObject(@object, gameLocation);
                         processors.Add(processor);
                     }
                 }
@@ -170,7 +181,7 @@ namespace QualityProducts
             {
                 if (!(kv.Value is Processor))
                 {
-                    Processor processor = Processor.FromObject(kv.Value);
+                    Processor processor = Processor.FromObject(kv.Value, e.Location);
                     if (processor != null)
                     {
                         processors.Add(processor);
@@ -193,6 +204,7 @@ namespace QualityProducts
         {
             if (e.NewMenu is CraftingPage menu)
             {
+                Monitor.VerboseLog("Cooking menu opened. Swapping to custom cooking menu...");
                 bool cooking = Helper.Reflection.GetField<bool>(menu, "cooking").GetValue();
                 Game1.activeClickableMenu = new ModdedCraftingPage(menu.xPositionOnScreen, menu.yPositionOnScreen, menu.width, menu.height, cooking);
             }
