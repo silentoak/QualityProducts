@@ -3,26 +3,26 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SilentOak.Patching;
 using StardewValley;
+using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
 {
     /// <summary>
     /// Patch for custom mead textures.
     /// </summary>
-    [PatchData(
-        assembly: "StardewValley",
-        assemblyVersion: "1.3.*",
-        type: "StardewValley.Object",
-        originalMethod: "drawWhenHeld",
-        originalMethodParams: new Type[]
-        {
-            typeof(SpriteBatch),   // spriteBatch    (sprite batch to draw onto)
-            typeof(Vector2),       // objectPosition (where to draw on the sprite batch)
-            typeof(Farmer)         // f              (farmer that is holding the object)
-        }
-        )]
     public static class SObjectDrawWhenHeld
     {
+        public static readonly PatchData PatchData = new PatchData(
+            type: typeof(SObject),
+            originalMethodName: "drawWhenHeld",
+            originalMethodParams: new Type[]
+            {
+                typeof(SpriteBatch),   // spriteBatch    (sprite batch to draw onto)
+                typeof(Vector2),       // objectPosition (where to draw on the sprite batch)
+                typeof(Farmer)         // f              (farmer that is holding the object)
+            }
+        );
+
         /// <summary>
         /// Patch for drawing a custom sprite (if available) for the given farmer's active object.
         /// </summary> 

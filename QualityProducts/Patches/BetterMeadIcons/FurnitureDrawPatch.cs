@@ -3,27 +3,25 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using SilentOak.Patching;
-using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 
 namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
 {
-    [PatchData(
-        assembly: "StardewValley",
-        assemblyVersion: "1.3.*",
-        type: "StardewValley.Objects.Furniture",
-        originalMethod: "draw",
-        originalMethodParams: new Type[]
-        {
-            typeof(SpriteBatch),
-            typeof(int),
-            typeof(int),
-            typeof(float)
-        }
-        )]
     public static class FurnitureDrawPatch
     {
+        public static readonly PatchData PatchData = new PatchData(
+            type: typeof(Furniture),
+            originalMethodName: "draw",
+            originalMethodParams: new Type[]
+            {
+                typeof(SpriteBatch),
+                typeof(int),
+                typeof(int),
+                typeof(float)
+            }
+        );
+
         /// <summary>
         /// Patch for drawing a custom sprite (if available) for the furniture's held object.
         /// </summary>

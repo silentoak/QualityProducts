@@ -10,21 +10,21 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
     /// <summary>
     /// Patch for custom mead textures.
     /// </summary>
-    [PatchData(
-        assembly: "StardewValley",
-        assemblyVersion: "1.3.*",
-        type: "StardewValley.Object",
-        originalMethod: "draw",
-        originalMethodParams: new Type[]
-        {
-            typeof(SpriteBatch),   // spriteBatch (sprite batch to draw onto)
-            typeof(int),           // x           (x tile coordinate) 
-            typeof(int),           // y           (y tile coordinate)
-            typeof(float),         // alpha       (transparency)
-        }
-        )]
+
     public static class SObjectDrawPatch
     {
+        public static readonly PatchData PatchData = new PatchData(
+            type: typeof(SObject),
+            originalMethodName: "draw",
+            originalMethodParams: new Type[]
+            {
+                typeof(SpriteBatch),   // spriteBatch (sprite batch to draw onto)
+                typeof(int),           // x           (x tile coordinate) 
+                typeof(int),           // y           (y tile coordinate)
+                typeof(float),         // alpha       (transparency)
+            }
+        );
+
         /// <summary>
         /// Patch for drawing a custom sprite (if available) for the object held by the instance.
         /// </summary>

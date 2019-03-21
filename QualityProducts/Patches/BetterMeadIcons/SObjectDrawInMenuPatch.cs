@@ -10,25 +10,25 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
     /// <summary>
     /// Patch for custom mead textures.
     /// </summary>
-    [PatchData(
-        assembly: "StardewValley",
-        assemblyVersion: "1.3.*",
-        type: "StardewValley.Object",
-        originalMethod: "drawInMenu",
-        originalMethodParams: new Type[]
-        {
-            typeof(SpriteBatch),  // spriteBatch     (sprite batch to draw onto)
-            typeof(Vector2),      // location        (where to draw on the sprite batch)
-            typeof(float),        // scaleSize       (drawing scale)   
-            typeof(float),        // transparency    
-            typeof(float),        // layerDepth      
-            typeof(bool),         // drawStackNumber (if true, draw stack number)
-            typeof(Color),        // color           
-            typeof(bool)          // drawShadow      (if true, draw shadow)
-        }
-        )]
+
     public static class SObjectDrawInMenuPatch
     {
+        public static readonly PatchData PatchData = new PatchData(
+            type: typeof(SObject),
+            originalMethodName: "drawInMenu",
+            originalMethodParams: new Type[]
+            {
+                typeof(SpriteBatch),  // spriteBatch     (sprite batch to draw onto)
+                typeof(Vector2),      // location        (where to draw on the sprite batch)
+                typeof(float),        // scaleSize       (drawing scale)   
+                typeof(float),        // transparency    
+                typeof(float),        // layerDepth      
+                typeof(bool),         // drawStackNumber (if true, draw stack number)
+                typeof(Color),        // color           
+                typeof(bool)          // drawShadow      (if true, draw shadow)
+            }
+        );
+
         /// <summary>
         /// Patch for drawing a custom sprite (if available) for the object in the menu.
         /// </summary>

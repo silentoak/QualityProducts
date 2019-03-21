@@ -9,25 +9,25 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
 {
-    [PatchData(
-        assembly: "Automate",
-        assemblyVersion: "1.11.*",
-        types: new string[] {
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.PreservesJarMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.CheesePressMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.MayonnaiseMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine"
-        },
-        originalMethod: "SetInput",
-        originalMethodParams: new Type[]
-        {
-            typeof(IStorage)
-        }
-        )]
     public static class MachineSetInputPatch
     {
+        public static readonly PatchData PatchData = new PatchData(
+            assembly: typeof(IStorage).Assembly,
+            typeNames: new string[] {
+                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
+                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
+                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.PreservesJarMachine",
+                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.CheesePressMachine",
+                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.MayonnaiseMachine",
+                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine"
+            },
+            originalMethodName: "SetInput",
+            originalMethodParams: new Type[]
+            {
+                typeof(IStorage)
+            }
+        );
+
         public static bool Prefix(object __instance, ref bool __result, IStorage input)
         {
             IReflectedProperty<SObject> instanceMachine = ModEntry.StaticHelper.Reflection.GetProperty<SObject>(__instance, "Machine");

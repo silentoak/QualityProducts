@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using SilentOak.Patching.Exceptions;
+using Harmony;
 
 namespace SilentOak.Patching.Tests
 {
@@ -12,23 +14,23 @@ namespace SilentOak.Patching.Tests
     public class PatchManagerTests
     {
         /// <summary>
-        /// Ensures that <see cref="PatchManager.GetAssemblyByName(string)"/> returns this assembly when given its name. 
+        /// Ensures that <see cref="PatchData.GetAssemblyByNameAndVersion(string, string)"/> returns this assembly when given its name. 
         /// </summary>
         [TestCase]
         public void Test_GetAssemblyByName_ThisAssembly()
         {
             Assembly thisAssembly = Assembly.GetCallingAssembly();
-            Assembly foundAssembly = PatchManager.GetAssemblyByName(thisAssembly.GetName().Name);
+            Assembly foundAssembly = PatchData.GetAssemblyByNameAndVersion(thisAssembly.GetName().Name, "*");
             Assert.AreEqual(thisAssembly, foundAssembly);
         }
 
         /// <summary>
-        /// Ensures that <see cref="PatchManager.GetAssemblyByName(string)"/> throws on non-existent assembly.
+        /// Ensures that <see cref="PatchData.GetAssemblyByNameAndVersion(string, string)"/> throws on non-existent assembly.
         /// </summary>
         [TestCase]
         public void Test_GetAssemblyByName_NoAssembly()
         {
-            Assert.Throws<DllNotFoundException>(() => PatchManager.GetAssemblyByName("null"));
+            Assert.Throws<DllNotFoundException>(() => PatchData.GetAssemblyByNameAndVersion("null", "*"));
         }
 
         /// <summary>
@@ -41,14 +43,14 @@ namespace SilentOak.Patching.Tests
         }
 
 
-        [PatchData(
-            assembly: "PatchTest",
-            assemblyVersion: "1.0.0",
-            type: "PatchTest.Test",
-            originalMethod: "NoTest"
-            )]
         public static class PatchTest1
         {
+            public static readonly PatchData PatchData = new PatchData(
+                assemblyName: "PatchTest",
+                assemblyVersion: "1.0.0",
+                typeName: "PatchTest.Test",
+                originalMethod: "NoTest"
+            );
         }
 
         /// <summary>
@@ -57,115 +59,104 @@ namespace SilentOak.Patching.Tests
         [TestCase]
         public void Test_GetPatchData_HadPatchData()
         {
-            PatchData patchData = new PatchData(
-                assembly: "PatchTest",
+            PatchData testPatchData = new PatchData(
+                assemblyName: "PatchTest",
                 assemblyVersion: "1.0.0",
-                type: "PatchTest.Test",
+                typeName: "PatchTest.Test",
                 originalMethod: "NoTest"
                 );
 
-            PatchData testPatchData = typeof(PatchTest1).GetCustomAttribute<PatchData>();
-
-            PatchData retrievedPatchData = PatchManager.GetPatchData(typeof(PatchTest1));
-
-            Assert.AreEqual(retrievedPatchData, testPatchData);
-            Assert.AreEqual(patchData.Assembly, retrievedPatchData.Assembly);
-            Assert.AreEqual(patchData.AssemblyVersion, retrievedPatchData.AssemblyVersion);
-            Assert.AreEqual(patchData.Type, retrievedPatchData.Type);
-            Assert.AreEqual(patchData.OriginalMethod, retrievedPatchData.OriginalMethod);
-            Assert.AreEqual(patchData.OriginalMethodParams, retrievedPatchData.OriginalMethodParams);
+            Assert.IsNotNull(PatchManager.GetPatchData(typeof(PatchTest1)));
         }
 
 
-        [PatchData(
-            assembly: "NoAssembly",
-            assemblyVersion: "*",
-            type: "Anything",
-            originalMethod: "Anything"
-            )]
         public static class PatchTest2
         {
+            public static readonly PatchData PatchData = new PatchData(
+                assemblyName: "NoAssembly",
+                assemblyVersion: "*",
+                typeName: "Anything",
+                originalMethod: "Anything"
+            );
         }
 
         /// <summary>
-        /// Ensures that <see cref="PatchManager.CalculateMethod(Type)"/> throws when the assembly is not found.
+        /// Ensures that <see cref="PatchManager.Apply(Type)"/> throws when the assembly is not found.
         /// </summary>
         [TestCase]
         public void Test_CalculateMethod_DllMissing()
         {
-            Assert.Throws<DllNotFoundException>(() => PatchManager.CalculateMethod(typeof(PatchTest2)));
+            Assert.Throws<DllNotFoundException>(() =>
+                PatchManager.Apply(typeof(PatchTest2))
+            );
         }
 
 
-        [PatchData(
-            assembly: "Patching",
-            assemblyVersion: "0.1.0",
-            type: "Anything",
-            originalMethod: "Anything"
-            )]
         public static class PatchTest3
         {
+            public static readonly PatchData PatchData = new PatchData(
+                assemblyName: typeof(PatchTest3).Assembly.GetName().Name,
+                assemblyVersion: "0.1.0",
+                typeName: "Anything",
+                originalMethod: "Anything"
+            );
         }
 
         /// <summary>
-        /// Ensures that <see cref="PatchManager.CalculateMethod(Type)"/> throws when the assembly has the wrong version.
+        /// Ensures that <see cref="PatchManager.Apply(Type)"/> throws when the assembly has the wrong version.
         /// </summary>
         [TestCase]
         public void Test_CalculateMethod_DllWrongVersion()
         {
-            Assert.Throws<DllNotFoundException>(() => PatchManager.CalculateMethod(typeof(PatchTest3)));
+            Assert.Throws<DllNotFoundException>(() => PatchManager.Apply(typeof(PatchTest3)));
         }
 
 
-        [PatchData(
-            assembly: "Patching",
-            assemblyVersion: "*",
-            type: "NoType",
-            originalMethod: "Anything"
-            )]
         public static class PatchTest4
         {
+            public static readonly PatchData PatchData = new PatchData(
+                assembly: typeof(PatchTest4).Assembly,
+                typeName: "NoType",
+                originalMethodName: "Anything"
+            );
         }
 
         /// <summary>
-        /// Ensures that <see cref="PatchManager.CalculateMethod(Type)"/> throws when the type is not found.
+        /// Ensures that <see cref="PatchManager.Apply(Type)"/> throws when the type is not found.
         /// </summary>
         [TestCase]
         public void Test_CalculateMethod_TypeMissing()
         {
-            Assert.Throws<TypeLoadException>(() => PatchManager.CalculateMethod(typeof(PatchTest4)));
+            Assert.Throws<TypeLoadException>(() => PatchManager.Apply(typeof(PatchTest4)));
         }
 
 
-        [PatchData(
-            assembly: "Patching",
-            assemblyVersion: "*",
-            type: "SilentOak.Patching.Tests.PatchManagerTests+PatchTest5",
-            originalMethod: "NoMethod"
-            )]
         public static class PatchTest5
         {
+            public static readonly PatchData PatchData = new PatchData(
+                type: typeof(PatchTest5),
+                originalMethodName: "NoMethod"
+            );
         }
 
         /// <summary>
-        /// Ensures that <see cref="PatchManager.CalculateMethod(Type)"/> throws when the method is not found.
+        /// Ensures that <see cref="PatchManager.Apply(Type)"/> throws when the method is not found.
         /// </summary>
         [TestCase]
         public void Test_CalculateMethod_MethodMissing()
         {
-            Assert.Throws<MissingMethodException>(() => PatchManager.CalculateMethod(typeof(PatchTest5)));
+            Assert.Throws<MissingMethodException>(() => PatchManager.Apply(typeof(PatchTest5)));
         }
 
 
-        [PatchData(
-            assembly: "Patching",
-            assemblyVersion: "*",
-            type: "SilentOak.Patching.Tests.PatchManagerTests+PatchTest6",
-            originalMethod: "Test",
-            originalMethodParams: new Type[] { typeof(int) }
-            )]
         public static class PatchTest6
         {
+            public static readonly PatchData PatchData = new PatchData(
+                type: typeof(PatchTest6),
+                originalMethodName: "Test",
+                originalMethodParams: new Type[] { typeof(int) }
+            );
+
             public static void Test(int dummy)
             {
                 return;
@@ -173,14 +164,16 @@ namespace SilentOak.Patching.Tests
         }
 
         /// <summary>
-        /// Ensures that <see cref="PatchManager.CalculateMethod(Type)"/> successfully retrieves the correct method.
+        /// Ensures that <see cref="PatchData.CalculateMethods"/> successfully retrieves the correct method.
         /// </summary>
         [TestCase]
         public void Test_CalculateMethod_Success()
         {
-            MethodInfo method = typeof(PatchTest6).GetMethod("Test", BindingFlags.Public | BindingFlags.Static);
+            PatchData patchData = PatchManager.GetPatchData(typeof(PatchTest6));
 
-            Assert.AreEqual(method, PatchManager.CalculateMethod(typeof(PatchTest6)));
+            MethodInfo testMethod = AccessTools.Method(typeof(PatchTest6), "Test");
+
+            Assert.AreEqual(testMethod, patchData.MethodsToPatch.SingleOrDefault());
         }
     }
 }
