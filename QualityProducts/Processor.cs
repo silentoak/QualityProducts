@@ -364,11 +364,14 @@ namespace SilentOak.QualityProducts
                     CurrentRecipe.FailAmount();
                     return false;
                 }
-
-                @object.Stack -= amount;
-                if (@object.Stack <= 0)
+    
+                if (amount > 1)
                 {
-                    who.removeItemFromInventory(@object);
+                    @object.Stack -= amount - 1;
+                    if (@object.Stack <= 0)
+                    {
+                        who.removeItemFromInventory(@object);
+                    }
                 }
 
                 heldObject.Value = WithQuality(CurrentRecipe.Process)(@object);
