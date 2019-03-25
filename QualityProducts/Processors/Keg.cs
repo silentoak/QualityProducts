@@ -16,6 +16,7 @@ namespace SilentOak.QualityProducts.Processors
         {
             // Wheat => Beer
             new Recipe(
+                name: "Beer",
                 inputID: 262,
                 inputAmount: 1,
                 minutes: 1750,
@@ -29,6 +30,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Hops => Pale Ale
             new Recipe(
+                name: "Pale Ale",
                 inputID: 304,
                 inputAmount: 1,
                 minutes: 2250,
@@ -42,6 +44,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // 5 Coffee Beans => Coffee
             new Recipe(
+                name: "Coffee",
                 inputID: 433,
                 inputAmount: 5,
                 minutes: 120,
@@ -61,6 +64,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Honey => Mead
             new Recipe(
+                name: "Mead",
                 inputID: 340,
                 inputAmount: 1,
                 minutes: 600,
@@ -86,6 +90,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Vegetable => Juice
             new Recipe(
+                name: "Juice",
                 inputID: SObject.VegetableCategory,
                 inputAmount: 1,
                 minutes: 6000,
@@ -109,6 +114,7 @@ namespace SilentOak.QualityProducts.Processors
             
             // Fruit => Wine
             new Recipe(
+                name: "Wine",
                 inputID: SObject.FruitsCategory,
                 inputAmount: 1,
                 minutes: 10000,
@@ -143,7 +149,7 @@ namespace SilentOak.QualityProducts.Processors
          * Public methods
          ****************/
 
-        public Keg(GameLocation location) : base(ProcessorType.KEG, location)
+        public Keg(GameLocation location) : base(ProcessorTypes.Keg, location)
         {
         }
 

@@ -5,12 +5,14 @@ using SilentOak.Patching;
 using StardewValley;
 using SObject = StardewValley.Object;
 
+/***
+ * Inspired by https://github.com/danvolchek/StardewMods/blob/32046f848ea1a1aade495b9adad612f8b94928d1/BetterArtisanGoodIcons/Patches/SObjectPatches/DrawInMenuPatch.cs
+ ***/
 namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
 {
     /// <summary>
     /// Patch for custom mead textures.
     /// </summary>
-
     public static class SObjectDrawInMenuPatch
     {
         public static readonly PatchData PatchData = new PatchData(

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using QualityProducts.Cooking;
 using SilentOak.Patching;
+using SilentOak.QualityProducts.API;
 using SilentOak.QualityProducts.Patches.BetterMeadIcons;
 using SilentOak.QualityProducts.Util;
 using StardewModdingAPI;
@@ -32,13 +33,17 @@ namespace SilentOak.QualityProducts
         internal static IMonitor StaticMonitor { get; private set; }
 
         /// <summary>The mod configuration from the player.</summary>
-        private QualityProductsConfig Config;
+        internal static QualityProductsConfig Config { get; set; }
 
 
         /****************
          * Public methods
          ****************/
 
+        /// <summary>
+        /// Entry for this mod.
+        /// </summary>
+        /// <param name="helper">Helper.</param>
         public override void Entry(IModHelper helper)
         {
             StaticHelper = Helper;
@@ -46,27 +51,39 @@ namespace SilentOak.QualityProducts
 
             Config = Helper.ReadConfig<QualityProductsConfig>();
 
-            if (Config.EnableQualityCooking)
+            if (Config.IsAnythingEnabled())
             {
-                Helper.Events.Display.MenuChanged += OnCrafting;
-            }
+                if (Config.IsCookingEnabled())
+                {
+                    Helper.Events.Display.MenuChanged += OnCrafting;
+                }
 
-            Helper.Events.GameLoop.Saved += OnSaved;
-            Helper.Events.GameLoop.Saving += OnSaving;
-            Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
-            Helper.Events.World.LocationListChanged += OnLoadLocation;
-            Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
+                Helper.Events.GameLoop.Saved += OnSaved;
+                Helper.Events.GameLoop.Saving += OnSaving;
+                Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+                Helper.Events.World.LocationListChanged += OnLoadLocation;
+                Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
 
-            if (Config.EnableMeadTextures && SpriteLoader.Init(Helper, Monitor, Config))
-            {
-                PatchManager.ApplyAll(
-                    typeof(SObjectDrawPatch),
-                    typeof(SObjectDraw2Patch),
-                    typeof(SObjectDrawInMenuPatch),
-                    typeof(SObjectDrawWhenHeld),
-                    typeof(FurnitureDrawPatch)
-                );
+                if (Config.EnableMeadTextures && SpriteLoader.Init(Helper, Monitor, Config))
+                {
+                    PatchManager.ApplyAll(
+                        typeof(SObjectDrawPatch),
+                        typeof(SObjectDraw2Patch),
+                        typeof(SObjectDrawInMenuPatch),
+                        typeof(SObjectDrawWhenHeld),
+                        typeof(FurnitureDrawPatch)
+                    );
+                }
             }
+        }
+
+        /// <summary>
+        /// Gets the API.
+        /// </summary>
+        /// <returns>The API.</returns>
+        public override object GetApi()
+        {
+            return new QualityProductsAPI(Config);
         }
 
 
@@ -87,6 +104,28 @@ namespace SilentOak.QualityProducts
                 Monitor.VerboseLog($"Placing `{@object.Name}`:{@object.GetType().Name} at {gameLocation.Name}({@object.TileLocation.X},{@object.TileLocation.Y})");
                 gameLocation.setObject(@object.TileLocation, @object);
             }
+        }
+
+        /// <summary>
+        /// Checks if the given object should be replaced with a processor.
+        /// </summary>
+        /// <returns><c>true</c>, if the object should be replaced, <c>false</c> otherwise.</returns>
+        /// <param name="object">Object to check.</param>
+        /// <param name="location">Location of the object.</param>
+        /// <param name="processor">Processor to replace the object with.</param>
+        private bool ShouldReplaceWithProcessor(SObject @object, GameLocation location, out Processor processor)
+        {
+            if (@object != null && (bool)@object.bigCraftable && !(@object is Processor))
+            {
+                processor = Processor.FromObject(@object, location);
+                if (processor != null && Config.IsEnabled(processor))
+                {
+                    return true;
+                }
+            }
+
+            processor = null;
+            return false;
         }
 
         /// <summary>
@@ -118,9 +157,8 @@ namespace SilentOak.QualityProducts
                 List<Processor> processors = new List<Processor>();
                 foreach (SObject @object in gameLocation.Objects.Values)
                 {
-                    if (@object.bigCraftable.Value && Processor.GetProcessorType(@object.ParentSheetIndex) != null && !(@object is Processor))
+                    if (ShouldReplaceWithProcessor(@object, gameLocation, out Processor processor))
                     {
-                        Processor processor = Processor.FromObject(@object, gameLocation);
                         processors.Add(processor);
                     }
                 }
@@ -179,13 +217,9 @@ namespace SilentOak.QualityProducts
             List<Processor> processors = new List<Processor>();
             foreach (KeyValuePair<Vector2, SObject> kv in e.Added)
             {
-                if (!(kv.Value is Processor))
+                if (ShouldReplaceWithProcessor(kv.Value, e.Location, out Processor processor))
                 {
-                    Processor processor = Processor.FromObject(kv.Value, e.Location);
-                    if (processor != null)
-                    {
-                        processors.Add(processor);
-                    }
+                    processors.Add(processor);
                 }
             }
 

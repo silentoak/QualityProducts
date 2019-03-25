@@ -14,6 +14,11 @@ namespace SilentOak.QualityProducts.Processors
         /*************
          * Properties
          *************/
+        /// <summary>
+        /// Gets the name of this recipe.
+        /// </summary>
+        /// <value>The name.</value>
+        public string Name { get; }
 
         /// <summary>
         /// Gets the total amount of minutes needed for processing.
@@ -60,6 +65,7 @@ namespace SilentOak.QualityProducts.Processors
         /// <param name="inputEffects">Effects to be executed on input.</param>
         /// <param name="workingEffects">Effects to be executed during processing.</param>
         private Recipe(
+            string name,
             int minutes,
             Func<SObject, SObject> process,
             Action failAmount,
@@ -67,8 +73,9 @@ namespace SilentOak.QualityProducts.Processors
             Action<GameLocation, Vector2> workingEffects
         )
         {
+            Name = name;
             Minutes = minutes;
-            Process = process;
+            Process = WithQuality(process);
             FailAmount = failAmount ?? FailAmount;
             InputEffects = inputEffects;
             WorkingEffects = workingEffects;
@@ -85,6 +92,7 @@ namespace SilentOak.QualityProducts.Processors
         /// <param name="inputEffects">Effects to be executed on input.</param>
         /// <param name="workingEffects">Effects to be executed during processing.</param>
         public Recipe(
+            string name,
             int inputID,
             int inputAmount,
             int minutes,
@@ -92,7 +100,7 @@ namespace SilentOak.QualityProducts.Processors
             Action failAmount = null,
             Action<GameLocation, Vector2> inputEffects = null,
             Action<GameLocation, Vector2> workingEffects = null
-        ) : this(minutes, process, failAmount, inputEffects, workingEffects)
+        ) : this(name, minutes, process, failAmount, inputEffects, workingEffects)
         {
             PossibleIngredients = new Dictionary<int, int>
             {
@@ -112,6 +120,7 @@ namespace SilentOak.QualityProducts.Processors
         /// <param name="inputEffects">Effects to be executed on input.</param>
         /// <param name="workingEffects">Effects to be executed during processing.</param>
         public Recipe(
+            string name,
             IEnumerable<int> inputIDs,
             int inputAmount,
             int minutes,
@@ -119,7 +128,7 @@ namespace SilentOak.QualityProducts.Processors
             Action failAmount = null,
             Action<GameLocation, Vector2> inputEffects = null,
             Action<GameLocation, Vector2> workingEffects = null
-        ) : this(minutes, process, failAmount, inputEffects, workingEffects)
+        ) : this(name, minutes, process, failAmount, inputEffects, workingEffects)
         {
             PossibleIngredients = new Dictionary<int, int>();
             foreach (int id in inputIDs)
@@ -138,13 +147,14 @@ namespace SilentOak.QualityProducts.Processors
         /// <param name="inputEffects">Effects to be executed on input.</param>
         /// <param name="workingEffects">Effects to be executed during processing.</param>
         public Recipe(
+            string name,
             Dictionary<int, int> possibleIngredients,
             int minutes,
             Func<SObject, SObject> process,
             Action failAmount = null,
             Action<GameLocation, Vector2> inputEffects = null,
             Action<GameLocation, Vector2> workingEffects = null
-        ) : this(minutes, process, failAmount, inputEffects, workingEffects)
+        ) : this(name, minutes, process, failAmount, inputEffects, workingEffects)
         {
             PossibleIngredients = possibleIngredients;
         }
@@ -171,6 +181,22 @@ namespace SilentOak.QualityProducts.Processors
                 PossibleIngredients.TryGetValue(@object.Category, out amount);
             }
             return amount;
+        }
+
+        /// <summary>
+        /// Returns a function that executes the same process as the given one,
+        /// but adds the ingredient's quality to the final product.
+        /// </summary>
+        /// <returns>The modified processing function.</returns>
+        /// <param name="process">Function that transforms ingredients into products.</param>
+        private static Func<SObject, SObject> WithQuality(Func<SObject, SObject> process)
+        {
+            return input =>
+            {
+                SObject output = process(input);
+                output.Quality = input.Quality;
+                return output;
+            };
         }
     }
 }

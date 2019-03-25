@@ -9,7 +9,7 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
 {
-    public static class MachineSetInputPatch
+    internal static class MachineSetInputPatch
     {
         public static readonly PatchData PatchData = new PatchData(
             assembly: typeof(IStorage).Assembly,

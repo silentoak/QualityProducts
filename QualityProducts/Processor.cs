@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using SilentOak.QualityProducts.Extensions;
 using SilentOak.QualityProducts.Processors;
 using SilentOak.QualityProducts.Util;
 using StardewValley;
@@ -14,9 +15,33 @@ namespace SilentOak.QualityProducts
     /// </summary>
     public abstract class Processor : SObject
     {
+        /*********
+         * Types
+         ********/
+
+        /// <summary>
+        /// The available processor types.
+        /// </summary>
+        public enum ProcessorTypes
+        {
+            Keg = 12,
+            PreservesJar = 15,
+            CheesePress = 16,
+            Loom = 17,
+            OilMaker = 19,
+            MayonnaiseMachine = 24
+        }
+
+
         /*************
          * Properties
          *************/
+
+        /// <summary>
+        /// Gets the type of the processor.
+        /// </summary>
+        /// <value>The type of the processor.</value>
+        public ProcessorTypes ProcessorType => (ProcessorTypes)ParentSheetIndex;
 
         /// <summary>
         /// Gets the location this instance is in.
@@ -37,24 +62,6 @@ namespace SilentOak.QualityProducts
         private Recipe CurrentRecipe { get; set; }
 
 
-        /*********
-         * Types
-         ********/
-
-        /// <summary>
-        /// The available processor types.
-        /// </summary>
-        public enum ProcessorType
-        {
-            KEG = 12,
-            PRESERVES_JAR = 15,
-            CHEESE_PRESS = 16,
-            LOOM = 17,
-            OIL_MAKER = 19,
-            MAYONNAISE_MACHINE = 24
-        }
-
-
         /****************
          * Public methods
          ****************/
@@ -64,11 +71,11 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <returns>The processor type.</returns>
         /// <param name="parentSheetIndex">Parent sheet index.</param>
-        public static ProcessorType? GetProcessorType(int parentSheetIndex)
+        public static ProcessorTypes? GetProcessorType(int parentSheetIndex)
         {
-            if (Enum.IsDefined(typeof(ProcessorType), parentSheetIndex))
+            if (Enum.IsDefined(typeof(ProcessorTypes), parentSheetIndex))
             {
-                return (ProcessorType)Enum.ToObject(typeof(ProcessorType), parentSheetIndex);
+                return (ProcessorTypes)Enum.ToObject(typeof(ProcessorTypes), parentSheetIndex);
             }
 
             return null;
@@ -79,24 +86,24 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <returns>The new processor instance.</returns>
         /// <param name="processorType">Processor type to be instantiated.</param>
-        public static Processor Create(ProcessorType processorType, GameLocation location)
+        public static Processor Create(ProcessorTypes processorType, GameLocation location)
         {
             switch (processorType)
             {
-                case ProcessorType.KEG:
+                case ProcessorTypes.Keg:
                     return new Keg(location);
-                case ProcessorType.PRESERVES_JAR:
+                case ProcessorTypes.PreservesJar:
                     return new PreservesJar(location);
-                case ProcessorType.CHEESE_PRESS:
+                case ProcessorTypes.CheesePress:
                     return new CheesePress(location);
-                case ProcessorType.LOOM:
+                case ProcessorTypes.Loom:
                     return new Loom(location);
-                case ProcessorType.OIL_MAKER:
+                case ProcessorTypes.OilMaker:
                     return new OilMaker(location);
-                case ProcessorType.MAYONNAISE_MACHINE:
+                case ProcessorTypes.MayonnaiseMachine:
                     return new MayonnaiseMachine(location);
                 default:
-                    throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorType), processorType)} of Processor.ValidType has no corresponding case");
+                    throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorTypes), processorType)} of Processor.ValidType has no corresponding case");
             }
         }
 
@@ -106,7 +113,7 @@ namespace SilentOak.QualityProducts
         /// <returns>The new processor instance.</returns>
         /// <param name="processorType">Processor type to be instantiated.</param>
         /// <param name="initializer">Initializer.</param>
-        public static Processor Create(ProcessorType processorType, GameLocation location, Action<Processor> initializer)
+        public static Processor Create(ProcessorTypes processorType, GameLocation location, Action<Processor> initializer)
         {
             Processor newObj = Create(processorType, location);
             initializer(newObj);
@@ -125,7 +132,7 @@ namespace SilentOak.QualityProducts
                 return null;
             }
 
-            ProcessorType? processorType = GetProcessorType(@object.ParentSheetIndex);
+            ProcessorTypes? processorType = GetProcessorType(@object.ParentSheetIndex);
             if (processorType != null) {
                 Processor processor = Create(processorType.Value, location,
                 p => 
@@ -152,11 +159,11 @@ namespace SilentOak.QualityProducts
         /// <returns>The new object.</returns>
         public SObject ToObject()
         {
-            SObject @object = new SObject(tileLocation, parentSheetIndex, false)
+            SObject @object = new SObject(tileLocation, parentSheetIndex)
             {
-                IsRecipe = (bool)isRecipe,
+                IsRecipe = IsRecipe,
                 Name = Name,
-                DisplayName = base.DisplayName,
+                DisplayName = DisplayName,
                 Scale = Scale,
                 MinutesUntilReady = MinutesUntilReady
             };
@@ -184,29 +191,51 @@ namespace SilentOak.QualityProducts
             {
                 if (heldObject.Value != null)
                 {
-                    ModEntry.StaticMonitor.VerboseLog($"{Name} already has object {heldObject.Value.Name}"); 
                     return false;
                 }
-                if (@object != null && (bool)@object.bigCraftable)
+
+                if ((bool)@object.bigCraftable)
                 {
                     return false;
                 }
+
                 if (!probe && @object != null && heldObject.Value == null)
                 {
                     scale.X = 5f;
                 }
 
-                if (PerformProcessing(@object, probe, who))
+                /* 
+                 * The base method will be called only if the object to be
+                 * inserted is not an SObject, or a recipe for it was found but
+                 * it was disabled in the config.
+                 */
+                if (!TryForRecipe(@object, out Recipe recipe))
                 {
-                    if (!probe)
-                    {
-                        ModEntry.StaticMonitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
-                        ModEntry.StaticMonitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
-                    }
+                    return false;
+                }
+
+                if (!ModEntry.Config.IsEnabled(recipe, this))
+                {
+                    ModEntry.StaticMonitor.Log($"{recipe.Name} is disabled.");
+                    return base.performObjectDropInAction(dropInItem, probe, who);
+                }
+
+                if (probe)
+                {
                     return true;
                 }
+
+                if (PerformProcessing(@object, who, recipe))
+                {
+                    ModEntry.StaticMonitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
+                    ModEntry.StaticMonitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
+                    return true;
+                }
+
+                return false;
             }
-            return false;
+
+            return base.performObjectDropInAction(dropInItem, probe, who);
         }
 
         /***
@@ -268,31 +297,20 @@ namespace SilentOak.QualityProducts
         /// <param name="environment">Game location.</param>
         public sealed override void addWorkingAnimation(GameLocation environment)
         {
+            /* 
+             * If not doing anything, then the recipe was disabled
+             * and it should fall back on the game logic
+             */
+            if (CurrentRecipe == null)
+            {
+                base.addWorkingAnimation(environment);
+                return;
+            }
+
             if (environment != null && environment.farmers.Count != 0)
             {
                 AddWorkingEffects();
             }
-        }
-
-
-        /*******************
-         * Internal methods
-         *******************/
-
-        /// <summary>
-        /// Returns a function that executes the same process as the given one,
-        /// but adds the ingredient's quality to the final product.
-        /// </summary>
-        /// <returns>The modified processing function.</returns>
-        /// <param name="process">Function that transforms ingredients into products.</param>
-        public static Func<SObject, SObject> WithQuality(Func<SObject, SObject> process)
-        {
-            return input =>
-            {
-                SObject output = process(input);
-                output.Quality = input.Quality;
-                return output;
-            };
         }
 
 
@@ -305,7 +323,7 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <param name="processorType">Processor type.</param>
         /// <param name="location">Where the entity is.</param>
-        protected Processor(ProcessorType processorType, GameLocation location) : base(Vector2.Zero, (int)processorType, false)
+        protected Processor(ProcessorTypes processorType, GameLocation location) : base(Vector2.Zero, (int)processorType, false)
         {
             Location = location;
         }
@@ -341,81 +359,81 @@ namespace SilentOak.QualityProducts
          ******************/
 
         /// <summary>
+        /// Checks if item is ingredient of an available recipe, setting <see cref="CurrentRecipe"/> accordingly.
+        /// </summary>
+        /// <returns><c>true</c>, if found a recipe with the given ingredient, <c>false</c> otherwise.</returns>
+        /// <param name="object">Object.</param>
+        private bool TryForRecipe(SObject @object, out Recipe foundRecipe)
+        {
+            foundRecipe = Recipes.FirstOrDefault(recipe => recipe.AcceptsInput(@object));
+            return foundRecipe != null;
+        }
+
+
+        /// <summary>
         /// Performs item processing.
         /// </summary>
         /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
         /// <param name="object">Object to be processed.</param>
-        /// <param name="probe">If set to <c>true</c>, don't do anything.</param>
         /// <param name="who">Farmer that initiated processing.</param>
-        private bool PerformProcessing(SObject @object, bool probe, Farmer who)
+        private bool PerformProcessing(SObject @object, Farmer who, Recipe recipe)
         {
-            CurrentRecipe = Recipes.FirstOrDefault(recipe => recipe.AcceptsInput(@object));
-
-            if (CurrentRecipe == null)
+            int amount = recipe.GetAmount(@object);
+            if (amount > @object.Stack)
             {
+                recipe.FailAmount();
                 return false;
             }
 
-            if (!probe)
+            if (amount > 1)
             {
-                int amount = CurrentRecipe.GetAmount(@object);
-                if (amount > @object.Stack)
+                @object.Stack -= amount - 1;
+                if (@object.Stack <= 0)
                 {
-                    CurrentRecipe.FailAmount();
-                    return false;
+                    who.removeItemFromInventory(@object);
                 }
-    
-                if (amount > 1)
-                {
-                    @object.Stack -= amount - 1;
-                    if (@object.Stack <= 0)
-                    {
-                        who.removeItemFromInventory(@object);
-                    }
-                }
-
-                heldObject.Value = WithQuality(CurrentRecipe.Process)(@object);
-                minutesUntilReady.Value = CurrentRecipe.Minutes;
-                AddInputEffects();
-                AddWorkingEffects();
             }
+
+            CurrentRecipe = recipe;
+            heldObject.Value = CurrentRecipe.Process(@object);
+            minutesUntilReady.Value = CurrentRecipe.Minutes;
+
+            /* Both of these need to be below the CurrentRecipe assignment above. */
+            AddInputEffects();
+            AddWorkingEffects();
 
             return true;
         }
 
         /// <summary>
-        ///  Adds this entity's input animation to its location
+        /// Adds this entity's input animation to its location.
+        /// Assumes <see cref="CurrentRecipe"/> is not null.
         /// </summary>
         private void AddInputEffects()
         {
-            if (CurrentRecipe != null)
+            if (CurrentRecipe.InputEffects != null)
             {
-                if (CurrentRecipe.InputEffects != null)
-                {
-                    CurrentRecipe.InputEffects(Location, TileLocation);
-                }
-                else
-                {
-                    DefaultInputEffects();
-                }
+                CurrentRecipe.InputEffects(Location, TileLocation);
+            }
+            else
+            {
+                DefaultInputEffects();
             }
         }
 
         /// <summary>
         /// Adds this entity's working animation to its location.
+        /// Assumes <see cref="CurrentRecipe"/> is not null.
         /// </summary>
         private void AddWorkingEffects()
         {
-            if (CurrentRecipe != null)
+            if (CurrentRecipe.WorkingEffects != null)
             {
-                if (CurrentRecipe.WorkingEffects != null)
-                {
-                    CurrentRecipe.WorkingEffects(Location, TileLocation);
-                }
-                else
-                {
-                    DefaultWorkingEffects();
-                }
+                CurrentRecipe.WorkingEffects(Location, TileLocation);
+            }
+            else
+            {
+                DefaultWorkingEffects();
             }
         }
 

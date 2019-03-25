@@ -17,6 +17,7 @@ namespace SilentOak.QualityProducts.Processors
         {
             // Wool => Cloth
             new Recipe(
+                name: "Cloth",
                 inputID: 440,
                 inputAmount: 1,
                 minutes: 240,
@@ -40,7 +41,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates a <see cref="T:QualityProducts.Processors.Loom"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public Loom(GameLocation location) : base(ProcessorType.LOOM, location)
+        public Loom(GameLocation location) : base(ProcessorTypes.Loom, location)
         {
         }
 

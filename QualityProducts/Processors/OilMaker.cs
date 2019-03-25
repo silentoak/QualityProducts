@@ -18,6 +18,7 @@ namespace SilentOak.QualityProducts.Processors
         {
             // Corn => Oil
             new Recipe(
+                name: "Oil",
                 inputID: 270,
                 inputAmount: 1,
                 minutes: 1000,
@@ -26,6 +27,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Sunflower => Oil
             new Recipe(
+                name: "Oil",
                 inputID: 421,
                 inputAmount: 1,
                 minutes: 60,
@@ -34,6 +36,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Sunflower Seeds => Oil
             new Recipe(
+                name: "Oil",
                 inputID: 431,
                 inputAmount: 1,
                 minutes: 3200,
@@ -42,6 +45,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Truffle => Truffle Oil
             new Recipe(
+                name: "Truffle Oil",
                 inputID: 430,
                 inputAmount: 1,
                 minutes: 360,
@@ -69,7 +73,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates an <see cref="T:QualityProducts.Processors.OilMaker"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public OilMaker(GameLocation location) : base(ProcessorType.OIL_MAKER, location)
+        public OilMaker(GameLocation location) : base(ProcessorTypes.OilMaker, location)
         {
         }
 

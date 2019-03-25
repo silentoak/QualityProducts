@@ -19,6 +19,7 @@ namespace SilentOak.QualityProducts.Processors
         {
             // Large Egg (Brown or White) or Dinosaur Egg => 2 Mayo
             new Recipe(
+                name: "Mayonnaise",
                 inputIDs: new int[] {107, 174, 182},
                 inputAmount: 1,
                 minutes: 180,
@@ -27,6 +28,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Egg (Brown or White) => Mayo
             new Recipe(
+                name: "Mayonnaise",
                 inputIDs: new int[] {176, 180},
                 inputAmount: 1,
                 minutes: 180,
@@ -35,6 +37,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Duck Egg => Duck Mayo
             new Recipe(
+                name: "Duck Mayonnaise",
                 inputID: 442,
                 inputAmount: 1,
                 minutes: 180,
@@ -43,6 +46,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Void Egg => Void Mayo
             new Recipe(
+                name: "Void Mayonnaise",
                 inputID: 305,
                 inputAmount: 1,
                 minutes: 180,
@@ -70,7 +74,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates a <see cref="T:QualityProducts.Processors.MayonnaiseMachine"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public MayonnaiseMachine(GameLocation location) : base(ProcessorType.MAYONNAISE_MACHINE, location)
+        public MayonnaiseMachine(GameLocation location) : base(ProcessorTypes.MayonnaiseMachine, location)
         {
         }
     }

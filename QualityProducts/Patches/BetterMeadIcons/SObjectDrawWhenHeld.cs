@@ -5,6 +5,9 @@ using SilentOak.Patching;
 using StardewValley;
 using SObject = StardewValley.Object;
 
+/***
+ * Inspired by https://github.com/danvolchek/StardewMods/blob/32046f848ea1a1aade495b9adad612f8b94928d1/BetterArtisanGoodIcons/Patches/SObjectPatches/DrawWhenHeldPatch.cs
+ ***/
 namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
 {
     /// <summary>

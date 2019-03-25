@@ -14,6 +14,7 @@ namespace SilentOak.QualityProducts.Processors
         {
             // Goat Milk => Goat Cheese
             new Recipe(
+                name: "Goat Cheese",
                 inputID: 436,
                 inputAmount: 1,
                 minutes: 200,
@@ -22,6 +23,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // L. Goat Milk => 2 Goat Cheese
             new Recipe(
+                name: "Goat Cheese",
                 inputID: 438,
                 inputAmount: 1,
                 minutes: 200,
@@ -30,6 +32,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Milk => Cheese
             new Recipe(
+                name: "Cheese",
                 inputID: 184,
                 inputAmount: 1,
                 minutes: 200,
@@ -38,6 +41,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Large Milk => 2 Cheese
             new Recipe(
+                name: "Cheese",
                 inputID: 186,
                 inputAmount: 1,
                 minutes: 200,
@@ -57,7 +61,7 @@ namespace SilentOak.QualityProducts.Processors
          * Public methods
          ****************/
 
-        public CheesePress(GameLocation location) : base(ProcessorType.CHEESE_PRESS, location)
+        public CheesePress(GameLocation location) : base(ProcessorTypes.CheesePress, location)
         {
         }
 

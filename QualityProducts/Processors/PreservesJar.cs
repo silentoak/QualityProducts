@@ -18,6 +18,7 @@ namespace SilentOak.QualityProducts.Processors
         {
             // Vegetable => Pickles
             new Recipe(
+                name: "Pickles",
                 inputID: SObject.VegetableCategory,
                 inputAmount: 1,
                 minutes: 4000,
@@ -41,6 +42,7 @@ namespace SilentOak.QualityProducts.Processors
 
             // Fruit => Jelly
             new Recipe(
+                name: "Jelly",
                 inputID: SObject.FruitsCategory,
                 inputAmount: 1,
                 minutes: 4000,
@@ -83,7 +85,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates a <see cref="T:QualityProducts.Processors.PreservesJar"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public PreservesJar(GameLocation location) : base(ProcessorType.PRESERVES_JAR, location)
+        public PreservesJar(GameLocation location) : base(ProcessorTypes.PreservesJar, location)
         {
         }
 
