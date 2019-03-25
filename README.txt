@@ -1,4 +1,4 @@
-Quality Products - 1.2.2
+Quality Products - 2.1.1
 Adds quality modifiers to foods, beverages and other products made from quality ingredients.
 High-quality ingredients make high-quality products!
 
@@ -30,3 +30,7 @@ Gift bonuses are also included, as per the vanilla game:
 • Iridium quality  +50% friendship
 
 Edible items' health and energy restoration increase with quality.
+
+New Mead types with custom textures.
+
+Full customization via config.json.
