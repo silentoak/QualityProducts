@@ -29,12 +29,16 @@
     <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
+    <Reference Include="System">
+      <IncludeInPackage>false</IncludeInPackage>
+    </Reference>
     <Reference Include="0Harmony">
       <HintPath>..\packages\Lib.Harmony.1.2.0.1\lib\net45\0Harmony.dll</HintPath>
+      <IncludeInPackage>false</IncludeInPackage>
     </Reference>
     <Reference Include="nunit.framework">
       <Package>nunit</Package>
+      <IncludeInPackage>false</IncludeInPackage>
     </Reference>
   </ItemGroup>
   <ItemGroup>

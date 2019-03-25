@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Netcode;
 using SilentOak.Patching;
+using SilentOak.QualityProducts.Utils;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -53,7 +54,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
             }
 
 
-            Vector2 drawPosition = ModEntry.StaticHelper.Reflection.GetField<NetVector2>(__instance, "drawPosition").GetValue().Value;
+            Vector2 drawPosition = Util.Helper.Reflection.GetField<NetVector2>(__instance, "drawPosition").GetValue().Value;
 
             Rectangle rectangle;
             if (x == -1)

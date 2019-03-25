@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SilentOak.QualityProducts.Utils;
 using StardewValley;
 
 namespace SilentOak.QualityProducts
@@ -29,7 +30,7 @@ namespace SilentOak.QualityProducts
 
         public static void PerformGraphics(GameLocation gameLocation, TemporaryAnimatedSprite animatedSprites)
         {
-            Multiplayer multiplayer = ModEntry.StaticHelper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
+            Multiplayer multiplayer = Util.Helper.Reflection.GetField<Multiplayer>(typeof(Game1), "multiplayer").GetValue();
             multiplayer.broadcastSprites(gameLocation, animatedSprites);
         }
     }

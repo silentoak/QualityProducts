@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Netcode;
 using SilentOak.QualityProducts;
+using SilentOak.QualityProducts.Utils;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Menus;
@@ -514,7 +515,7 @@ namespace QualityProducts.Cooking
                 avgQuality = 4;
             }
 
-            ModEntry.StaticMonitor.VerboseLog($"Crafting {recipe.DisplayName} (quality {avgQuality})");
+            Util.Monitor.VerboseLog($"Crafting {recipe.DisplayName} (quality {avgQuality})");
 
             Item item = recipe.createItem();
             if (item is SObject obj)
@@ -586,12 +587,12 @@ namespace QualityProducts.Cooking
          /// <param name="recipe">Recipe.</param>
         private List<Ingredient> SelectIngredients(CraftingRecipe recipe)
         {
-            ModEntry.StaticMonitor.VerboseLog($"Selecting items: ");
+            Util.Monitor.VerboseLog($"Selecting items: ");
             List<Ingredient> selected = new List<Ingredient>();
-            Dictionary<int, int> recipeList = ModEntry.StaticHelper.Reflection.GetField<Dictionary<int, int>>(recipe, "recipeList").GetValue();
+            Dictionary<int, int> recipeList = Util.Helper.Reflection.GetField<Dictionary<int, int>>(recipe, "recipeList").GetValue();
             NetObjectList<Item> playerItemList = Game1.player.items;
 
-            ModEntry.StaticMonitor.VerboseLog($"Looking in inventory");
+            Util.Monitor.VerboseLog($"Looking in inventory");
             for (int ingredientIdx = recipeList.Count - 1; ingredientIdx >= 0; ingredientIdx--)
             {
                 int ingredientID = recipeList.Keys.ElementAt(ingredientIdx);
@@ -602,7 +603,7 @@ namespace QualityProducts.Cooking
                     Item playerItem = playerItemList[itemIdx];
                     if (playerItem != null && playerItem is SObject playerObject && !(playerItem as SObject).bigCraftable && (playerItem.parentSheetIndex == ingredientID || playerItem.Category == ingredientID))
                     {
-                        ModEntry.StaticMonitor.VerboseLog($"Selected {playerObject.Stack} {playerObject.DisplayName} (quality {playerObject.Quality})");
+                        Util.Monitor.VerboseLog($"Selected {playerObject.Stack} {playerObject.DisplayName} (quality {playerObject.Quality})");
                         recipeList[ingredientID] -= playerItem.Stack;
 
                         selected.Add(new Ingredient(playerItemList, itemIdx, ingredientAmt));
@@ -618,14 +619,14 @@ namespace QualityProducts.Cooking
 
                 if (recipe.isCookingRecipe && !ingredientDone && Game1.currentLocation is FarmHouse farmHouse)
                 {
-                    ModEntry.StaticMonitor.VerboseLog($"Looking in fridge");
+                    Util.Monitor.VerboseLog($"Looking in fridge");
                     NetObjectList<Item> fridgeItemList = farmHouse.fridge.Value.items;
                     for (int itemIdx = fridgeItemList.Count - 1; itemIdx >= 0; itemIdx--)
                     {
                         Item fridgeItem = fridgeItemList[itemIdx];
                         if (fridgeItem != null && fridgeItem is SObject fridgeObject && (fridgeItem.parentSheetIndex == ingredientID || fridgeItem.Category == ingredientID))
                         {
-                            ModEntry.StaticMonitor.VerboseLog($"Selected {fridgeObject.Stack} {fridgeObject.DisplayName} with quality {fridgeObject.Quality}");
+                            Util.Monitor.VerboseLog($"Selected {fridgeObject.Stack} {fridgeObject.DisplayName} with quality {fridgeObject.Quality}");
                             recipeList[ingredientID] -= fridgeItem.Stack;
 
                             selected.Add(new Ingredient(fridgeItemList, itemIdx, ingredientAmt));

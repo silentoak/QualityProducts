@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SilentOak.QualityProducts.Util
+namespace SilentOak.QualityProducts.Utils
 {
     /***
      * From https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/exceptions/creating-and-throwing-exceptions

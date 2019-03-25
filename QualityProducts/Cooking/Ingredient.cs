@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using SilentOak.QualityProducts;
+using SilentOak.QualityProducts.Utils;
 using StardewValley;
 using SObject = StardewValley.Object;
 
@@ -51,11 +52,11 @@ namespace QualityProducts.Cooking
         {
             if (Item is SObject @object)
             {
-                ModEntry.StaticMonitor.VerboseLog($"Consuming {@object.Stack} {@object.DisplayName} (quality {@object.Quality})...");
+                Util.Monitor.VerboseLog($"Consuming {@object.Stack} {@object.DisplayName} (quality {@object.Quality})...");
             }
             else
             {
-                ModEntry.StaticMonitor.VerboseLog($"Consuming {Item.Stack} {Item.DisplayName}...");
+                Util.Monitor.VerboseLog($"Consuming {Item.Stack} {Item.DisplayName}...");
             }
 
             ItemList[Index].Stack -= Amount;

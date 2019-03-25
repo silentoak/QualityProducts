@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Pathoschild.Stardew.Automate;
 using SilentOak.QualityProducts;
 using SilentOak.QualityProducts.Processors;

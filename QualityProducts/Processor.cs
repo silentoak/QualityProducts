@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using SilentOak.QualityProducts.Extensions;
 using SilentOak.QualityProducts.Processors;
-using SilentOak.QualityProducts.Util;
+using SilentOak.QualityProducts.Utils;
 using StardewValley;
 using SObject = StardewValley.Object;
 
@@ -216,19 +216,21 @@ namespace SilentOak.QualityProducts
 
                 if (!ModEntry.Config.IsEnabled(recipe, this))
                 {
-                    ModEntry.StaticMonitor.Log($"{recipe.Name} is disabled.");
+                    Util.Monitor.VerboseLog($"{recipe.Name} is disabled; fallback to default behaviour.");
                     return base.performObjectDropInAction(dropInItem, probe, who);
                 }
 
                 if (probe)
                 {
+                    // awful, but it's what vanilla SDV does, so must be done for compatibility with other mods.
+                    heldObject.Value = recipe.Process(@object); 
                     return true;
                 }
 
                 if (PerformProcessing(@object, who, recipe))
                 {
-                    ModEntry.StaticMonitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
-                    ModEntry.StaticMonitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
+                    Util.Monitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
+                    Util.Monitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
                     return true;
                 }
 

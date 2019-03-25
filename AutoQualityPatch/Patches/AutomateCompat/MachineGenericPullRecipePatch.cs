@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Pathoschild.Stardew.Automate;
+using SilentOak.AutoQualityPatch.Utils;
 using SilentOak.Patching;
 using SilentOak.QualityProducts;
 using StardewModdingAPI;
@@ -36,10 +37,10 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
         /// </summary>
         public static bool Prefix(IMachine __instance, ref bool __result, IStorage input)
         {
-            IReflectedProperty<SObject> instanceMachine = ModEntry.StaticHelper.Reflection.GetProperty<SObject>(__instance, "Machine");
+            IReflectedProperty<SObject> instanceMachine = Util.Helper.Reflection.GetProperty<SObject>(__instance, "Machine");
             if (instanceMachine.GetValue() is Processor processor)
             {
-                IReflectedField<IRecipe[]> privateRecipes = ModEntry.StaticHelper.Reflection.GetField<IRecipe[]>(__instance, "Recipes");
+                IReflectedField<IRecipe[]> privateRecipes = Util.Helper.Reflection.GetField<IRecipe[]>(__instance, "Recipes");
 
                 IRecipe[] recipes = RecipeManager.GetRecipeAdaptorsFor(processor, privateRecipes?.GetValue());
 

@@ -4,7 +4,7 @@ using QualityProducts.Cooking;
 using SilentOak.Patching;
 using SilentOak.QualityProducts.API;
 using SilentOak.QualityProducts.Patches.BetterMeadIcons;
-using SilentOak.QualityProducts.Util;
+using SilentOak.QualityProducts.Utils;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -29,9 +29,6 @@ namespace SilentOak.QualityProducts
          * Properties      
          ************/
 
-        internal static IModHelper StaticHelper { get; private set; }
-        internal static IMonitor StaticMonitor { get; private set; }
-
         /// <summary>The mod configuration from the player.</summary>
         internal static QualityProductsConfig Config { get; set; }
 
@@ -46,8 +43,7 @@ namespace SilentOak.QualityProducts
         /// <param name="helper">Helper.</param>
         public override void Entry(IModHelper helper)
         {
-            StaticHelper = Helper;
-            StaticMonitor = Monitor;
+            Util.Init(Helper, Monitor);
 
             Config = Helper.ReadConfig<QualityProductsConfig>();
 

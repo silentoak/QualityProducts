@@ -94,11 +94,11 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
 
             if (drawStackNumber && __instance.maximumStackSize() > 1 && scaleSize > 0.3 && __instance.Stack != 2147483647 && __instance.Stack > 1)
             {
-                Utility.drawTinyDigits(
+                StardewValley.Utility.drawTinyDigits(
                     toDraw: __instance.Stack,
                     spriteBatch,
                     position: location + new Vector2(
-                        64 - Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) + 3f * scaleSize,
+                        64 - StardewValley.Utility.getWidthOfTinyDigitString(__instance.Stack, 3f * scaleSize) + 3f * scaleSize,
                         64f - 18f * scaleSize + 2f
                     ),
                     scale: 3f * scaleSize,

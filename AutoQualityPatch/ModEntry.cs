@@ -1,4 +1,5 @@
 ﻿using SilentOak.AutoQualityPatch.Patches.AutomateCompat;
+using SilentOak.AutoQualityPatch.Utils;
 using SilentOak.Patching;
 using SilentOak.QualityProducts;
 using StardewModdingAPI;
@@ -8,13 +9,9 @@ namespace SilentOak.AutoQualityPatch
 {
     internal class ModEntry : Mod
     {
-        internal static IModHelper StaticHelper;
-        internal static IMonitor StaticMonitor; 
-
         public override void Entry(IModHelper helper)
         {
-            StaticHelper = Helper;
-            StaticMonitor = Monitor;
+            Util.Init(Helper, Monitor);
 
             Helper.Events.GameLoop.GameLaunched += GameLoop_GameLaunched;
         }
