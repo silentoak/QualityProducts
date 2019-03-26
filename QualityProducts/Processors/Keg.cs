@@ -149,7 +149,7 @@ namespace SilentOak.QualityProducts.Processors
          * Public methods
          ****************/
 
-        public Keg(GameLocation location) : base(ProcessorTypes.Keg, location)
+        public Keg() : base(ProcessorTypes.Keg)
         {
         }
 

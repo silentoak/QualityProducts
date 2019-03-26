@@ -85,7 +85,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates a <see cref="T:QualityProducts.Processors.PreservesJar"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public PreservesJar(GameLocation location) : base(ProcessorTypes.PreservesJar, location)
+        public PreservesJar() : base(ProcessorTypes.PreservesJar)
         {
         }
 

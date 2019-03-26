@@ -44,12 +44,6 @@ namespace SilentOak.QualityProducts
         public ProcessorTypes ProcessorType => (ProcessorTypes)ParentSheetIndex;
 
         /// <summary>
-        /// Gets the location this instance is in.
-        /// </summary>
-        /// <value>The location.</value>
-        public GameLocation Location { get; }
-
-        /// <summary>
         /// Gets the available recipes for this entity.
         /// </summary>
         /// <value>The recipes.</value>
@@ -86,24 +80,24 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <returns>The new processor instance.</returns>
         /// <param name="processorType">Processor type to be instantiated.</param>
-        public static Processor Create(ProcessorTypes processorType, GameLocation location)
+        public static Processor Create(ProcessorTypes processorType)
         {
             switch (processorType)
             {
                 case ProcessorTypes.Keg:
-                    return new Keg(location);
+                    return new Keg();
                 case ProcessorTypes.PreservesJar:
-                    return new PreservesJar(location);
+                    return new PreservesJar();
                 case ProcessorTypes.CheesePress:
-                    return new CheesePress(location);
+                    return new CheesePress();
                 case ProcessorTypes.Loom:
-                    return new Loom(location);
+                    return new Loom();
                 case ProcessorTypes.OilMaker:
-                    return new OilMaker(location);
+                    return new OilMaker();
                 case ProcessorTypes.MayonnaiseMachine:
-                    return new MayonnaiseMachine(location);
+                    return new MayonnaiseMachine();
                 default:
-                    throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorTypes), processorType)} of Processor.ValidType has no corresponding case");
+                    throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorTypes), processorType)} of {typeof(ProcessorTypes)} has no corresponding case");
             }
         }
 
@@ -113,9 +107,9 @@ namespace SilentOak.QualityProducts
         /// <returns>The new processor instance.</returns>
         /// <param name="processorType">Processor type to be instantiated.</param>
         /// <param name="initializer">Initializer.</param>
-        public static Processor Create(ProcessorTypes processorType, GameLocation location, Action<Processor> initializer)
+        public static Processor Create(ProcessorTypes processorType, Action<Processor> initializer)
         {
-            Processor newObj = Create(processorType, location);
+            Processor newObj = Create(processorType);
             initializer(newObj);
             return newObj;
         }
@@ -125,7 +119,7 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <returns>The new processor instance.</returns>
         /// <param name="object">Reference object.</param>
-        public static Processor FromObject(SObject @object, GameLocation location)
+        public static Processor FromObject(SObject @object)
         {
             if (!@object.bigCraftable.Value)
             {
@@ -134,7 +128,7 @@ namespace SilentOak.QualityProducts
 
             ProcessorTypes? processorType = GetProcessorType(@object.ParentSheetIndex);
             if (processorType != null) {
-                Processor processor = Create(processorType.Value, location,
+                Processor processor = Create(processorType.Value,
                 p => 
                 {
                     p.TileLocation = @object.TileLocation;
@@ -159,7 +153,7 @@ namespace SilentOak.QualityProducts
         /// <returns>The new object.</returns>
         public SObject ToObject()
         {
-            SObject @object = new SObject(tileLocation, parentSheetIndex)
+            SObject @object = new SObject(TileLocation, ParentSheetIndex)
             {
                 IsRecipe = IsRecipe,
                 Name = Name,
@@ -311,7 +305,7 @@ namespace SilentOak.QualityProducts
 
             if (environment != null && environment.farmers.Count != 0)
             {
-                AddWorkingEffects();
+                AddWorkingEffects(environment);
             }
         }
 
@@ -325,9 +319,8 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <param name="processorType">Processor type.</param>
         /// <param name="location">Where the entity is.</param>
-        protected Processor(ProcessorTypes processorType, GameLocation location) : base(Vector2.Zero, (int)processorType, false)
+        protected Processor(ProcessorTypes processorType) : base(Vector2.Zero, (int)processorType, false)
         {
-            Location = location;
         }
 
         /// <summary>
@@ -342,15 +335,15 @@ namespace SilentOak.QualityProducts
         /// <summary>
         /// Executes if recipe doesn't specify any input effects
         /// </summary>
-        protected virtual void DefaultInputEffects()
+        protected virtual void DefaultInputEffects(GameLocation location)
         {
-            Location.playSound("Ship");
+            location.playSound("Ship");
         }
 
         /// <summary>
         /// Executes if recipe doesn't specify any working effects
         /// </summary>
-        protected virtual void DefaultWorkingEffects()
+        protected virtual void DefaultWorkingEffects(GameLocation location)
         {
             return;
         }
@@ -401,8 +394,8 @@ namespace SilentOak.QualityProducts
             minutesUntilReady.Value = CurrentRecipe.Minutes;
 
             /* Both of these need to be below the CurrentRecipe assignment above. */
-            AddInputEffects();
-            AddWorkingEffects();
+            AddInputEffects(who.currentLocation);
+            AddWorkingEffects(who.currentLocation);
 
             return true;
         }
@@ -411,15 +404,15 @@ namespace SilentOak.QualityProducts
         /// Adds this entity's input animation to its location.
         /// Assumes <see cref="CurrentRecipe"/> is not null.
         /// </summary>
-        private void AddInputEffects()
+        private void AddInputEffects(GameLocation location)
         {
             if (CurrentRecipe.InputEffects != null)
             {
-                CurrentRecipe.InputEffects(Location, TileLocation);
+                CurrentRecipe.InputEffects(location, TileLocation);
             }
             else
             {
-                DefaultInputEffects();
+                DefaultInputEffects(location);
             }
         }
 
@@ -427,15 +420,15 @@ namespace SilentOak.QualityProducts
         /// Adds this entity's working animation to its location.
         /// Assumes <see cref="CurrentRecipe"/> is not null.
         /// </summary>
-        private void AddWorkingEffects()
+        private void AddWorkingEffects(GameLocation location)
         {
             if (CurrentRecipe.WorkingEffects != null)
             {
-                CurrentRecipe.WorkingEffects(Location, TileLocation);
+                CurrentRecipe.WorkingEffects(location, TileLocation);
             }
             else
             {
-                DefaultWorkingEffects();
+                DefaultWorkingEffects(location);
             }
         }
 

@@ -41,7 +41,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates a <see cref="T:QualityProducts.Processors.Loom"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public Loom(GameLocation location) : base(ProcessorTypes.Loom, location)
+        public Loom() : base(ProcessorTypes.Loom)
         {
         }
 
@@ -52,9 +52,9 @@ namespace SilentOak.QualityProducts.Processors
         /// <summary>
         /// Executes if recipe doesn't specify any input effects
         /// </summary>
-        protected override void DefaultInputEffects()
+        protected override void DefaultInputEffects(GameLocation location)
         {
-            Location.playSound("Ship");
+            location.playSound("Ship");
         }
     }
 }

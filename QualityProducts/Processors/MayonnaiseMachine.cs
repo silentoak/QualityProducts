@@ -74,7 +74,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates a <see cref="T:QualityProducts.Processors.MayonnaiseMachine"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public MayonnaiseMachine(GameLocation location) : base(ProcessorTypes.MayonnaiseMachine, location)
+        public MayonnaiseMachine() : base(ProcessorTypes.MayonnaiseMachine)
         {
         }
     }

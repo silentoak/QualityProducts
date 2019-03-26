@@ -22,20 +22,21 @@ namespace SilentOak.QualityProducts
          * Fields
          *********/
 
-        internal readonly Dictionary<GameLocation, List<Processor>> locationProcessors = new Dictionary<GameLocation, List<Processor>>(new ObjectReferenceComparer<GameLocation>());
+        /// <summary>The list of processors for each game location.</summary>
+        internal readonly IDictionary<GameLocation, IList<Processor>> locationProcessors = new Dictionary<GameLocation, IList<Processor>>(new ObjectReferenceComparer<GameLocation>());
 
 
-        /************
+        /*************
          * Properties      
-         ************/
+         *************/
 
         /// <summary>The mod configuration from the player.</summary>
         internal static QualityProductsConfig Config { get; set; }
 
 
-        /****************
+        /*****************
          * Public methods
-         ****************/
+         *****************/
 
         /// <summary>
         /// Entry for this mod.
@@ -93,7 +94,7 @@ namespace SilentOak.QualityProducts
         /// <param name="gameLocation">Game location.</param>
         /// <param name="objects">Objects.</param>
         /// <typeparam name="T">The 1st type parameter.</typeparam>
-        private void PlaceObjects<T>(GameLocation gameLocation, List<T> objects) where T : SObject
+        private void PlaceObjects<T>(GameLocation gameLocation, IList<T> objects) where T : SObject
         {
             foreach (T @object in objects)
             {
@@ -109,11 +110,11 @@ namespace SilentOak.QualityProducts
         /// <param name="object">Object to check.</param>
         /// <param name="location">Location of the object.</param>
         /// <param name="processor">Processor to replace the object with.</param>
-        private bool ShouldReplaceWithProcessor(SObject @object, GameLocation location, out Processor processor)
+        private bool ShouldReplaceWithProcessor(SObject @object, out Processor processor)
         {
             if (@object != null && (bool)@object.bigCraftable && !(@object is Processor))
             {
-                processor = Processor.FromObject(@object, location);
+                processor = Processor.FromObject(@object);
                 if (processor != null && Config.IsEnabled(processor))
                 {
                     return true;
@@ -153,7 +154,7 @@ namespace SilentOak.QualityProducts
                 List<Processor> processors = new List<Processor>();
                 foreach (SObject @object in gameLocation.Objects.Values)
                 {
-                    if (ShouldReplaceWithProcessor(@object, gameLocation, out Processor processor))
+                    if (ShouldReplaceWithProcessor(@object, out Processor processor))
                     {
                         processors.Add(processor);
                     }
@@ -170,7 +171,7 @@ namespace SilentOak.QualityProducts
         /// <param name="e">E.</param>
         private void OnSaving(object sender, SavingEventArgs e)
         {
-            foreach (KeyValuePair<GameLocation, List<Processor>> kv in locationProcessors)
+            foreach (KeyValuePair<GameLocation, IList<Processor>> kv in locationProcessors)
             {
                 Monitor.VerboseLog($"Unloading {kv.Key.Name}");
 
@@ -196,7 +197,7 @@ namespace SilentOak.QualityProducts
         /// <param name="e">E.</param>
         private void OnSaved(object sender, SavedEventArgs e)
         {
-            foreach (KeyValuePair<GameLocation, List<Processor>> kv in locationProcessors)
+            foreach (KeyValuePair<GameLocation, IList<Processor>> kv in locationProcessors)
             {
                 PlaceObjects(kv.Key, kv.Value);
                 kv.Value.Clear();
@@ -210,10 +211,10 @@ namespace SilentOak.QualityProducts
         /// <param name="e">E.</param>
         private void OnPlacingProcessor(object sender, ObjectListChangedEventArgs e)
         {
-            List<Processor> processors = new List<Processor>();
+            IList<Processor> processors = new List<Processor>();
             foreach (KeyValuePair<Vector2, SObject> kv in e.Added)
             {
-                if (ShouldReplaceWithProcessor(kv.Value, e.Location, out Processor processor))
+                if (ShouldReplaceWithProcessor(kv.Value, out Processor processor))
                 {
                     processors.Add(processor);
                 }

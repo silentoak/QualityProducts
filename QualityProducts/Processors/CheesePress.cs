@@ -61,7 +61,7 @@ namespace SilentOak.QualityProducts.Processors
          * Public methods
          ****************/
 
-        public CheesePress(GameLocation location) : base(ProcessorTypes.CheesePress, location)
+        public CheesePress() : base(ProcessorTypes.CheesePress)
         {
         }
 

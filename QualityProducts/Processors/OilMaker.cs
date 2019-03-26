@@ -73,7 +73,7 @@ namespace SilentOak.QualityProducts.Processors
         /// Instantiates an <see cref="T:QualityProducts.Processors.OilMaker"/>.
         /// </summary>
         /// <param name="location">Where the entity is.</param>
-        public OilMaker(GameLocation location) : base(ProcessorTypes.OilMaker, location)
+        public OilMaker() : base(ProcessorTypes.OilMaker)
         {
         }
 
@@ -85,18 +85,18 @@ namespace SilentOak.QualityProducts.Processors
         /// <summary>
         /// Executes if recipe doesn't specify any input effects.
         /// </summary>
-        protected override void DefaultInputEffects()
+        protected override void DefaultInputEffects(GameLocation location)
         {
-            Location.playSound("bubbles");
-            Location.playSound("sipTea");
+            location.playSound("bubbles");
+            location.playSound("sipTea");
         }
 
         /// <summary>
         /// Executes if recipe doesn't specify any working effects.
         /// </summary>
-        protected override void DefaultWorkingEffects()
+        protected override void DefaultWorkingEffects(GameLocation location)
         {
-            Animation.PerformGraphics(Location, Animation.Bubbles(TileLocation, Color.Yellow));
+            Animation.PerformGraphics(location, Animation.Bubbles(TileLocation, Color.Yellow));
         }
     }
 }
