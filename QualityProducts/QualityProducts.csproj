@@ -63,6 +63,10 @@
     <Compile Include="Cooking\Ingredient.cs" />
     <Compile Include="Cooking\ModdedCraftingPage.cs" />
     <Compile Include="Utils\Util.cs" />
+    <Compile Include="Patches\QualityBuffs\FarmerDoneEatingPatch.cs" />
+    <Compile Include="Patches\QualityBuffs\IClickableMenuDrawTooltipPatch.cs" />
+    <Compile Include="BuffedEdible.cs" />
+    <Compile Include="Extensions\BuffExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="manifest.json" />
@@ -73,6 +77,7 @@
     <Folder Include="Patches\" />
     <Folder Include="Patches\BetterMeadIcons\" />
     <Folder Include="API\" />
+    <Folder Include="Patches\QualityBuffs\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Patching\Patching.csproj">

@@ -4,6 +4,7 @@ using QualityProducts.Cooking;
 using SilentOak.Patching;
 using SilentOak.QualityProducts.API;
 using SilentOak.QualityProducts.Patches.BetterMeadIcons;
+using SilentOak.QualityProducts.Patches.QualityBuffs;
 using SilentOak.QualityProducts.Utils;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -53,6 +54,10 @@ namespace SilentOak.QualityProducts
                 if (Config.IsCookingEnabled())
                 {
                     Helper.Events.Display.MenuChanged += OnCrafting;
+                    PatchManager.ApplyAll(
+                        typeof(FarmerDoneEatingPatch),
+                        typeof(IClickableMenuDrawToolTipPatch)
+                    );
                 }
 
                 Helper.Events.GameLoop.Saved += OnSaved;
