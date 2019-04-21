@@ -26,7 +26,9 @@ namespace SilentOak.QualityProducts
         /// <summary>The list of processors for each game location.</summary>
         internal readonly IDictionary<GameLocation, IList<Processor>> locationProcessors = new Dictionary<GameLocation, IList<Processor>>(new ObjectReferenceComparer<GameLocation>());
 
-
+        /// <summary>Api for remote fridge storage</summary>
+        internal IRemoteFridgeAPI fridgeApi;
+        
         /*************
          * Properties      
          *************/
@@ -63,6 +65,7 @@ namespace SilentOak.QualityProducts
                 Helper.Events.GameLoop.Saved += OnSaved;
                 Helper.Events.GameLoop.Saving += OnSaving;
                 Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+                Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
                 Helper.Events.World.LocationListChanged += OnLoadLocation;
                 Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
 
@@ -140,6 +143,27 @@ namespace SilentOak.QualityProducts
             locationProcessors.Clear();
         }
 
+        /// <summary>
+        /// Game launched event handler.
+        /// </summary>
+        /// <param name="sender">Sender.</param>
+        /// <param name="e">E.</param>
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e)
+        {
+            bool fridgeLoaded = Helper.ModRegistry.IsLoaded("EternalSoap.RemoteFridgeStorage");
+            fridgeApi = Helper.ModRegistry.GetApi<IRemoteFridgeAPI>("EternalSoap.RemoteFridgeStorage");
+                        
+            if (fridgeApi != null)
+            {
+                fridgeApi.UseCustomCraftingMenu(false);
+                Monitor.VerboseLog("Remote Fridge Storage api is Loaded!");
+            }
+            else if (fridgeLoaded && Config.IsCookingEnabled())
+            {
+                Monitor.Log("Failed to load Remote Fridge API! Are you using the latest version?", LogLevel.Warn);
+            }
+        }
+        
         /// <summary>
         /// Location list changed event handler.
         /// </summary>
@@ -242,7 +266,7 @@ namespace SilentOak.QualityProducts
             {
                 Monitor.VerboseLog("Cooking menu opened. Swapping to custom cooking menu...");
                 bool cooking = Helper.Reflection.GetField<bool>(menu, "cooking").GetValue();
-                Game1.activeClickableMenu = new ModdedCraftingPage(menu.xPositionOnScreen, menu.yPositionOnScreen, menu.width, menu.height, cooking);
+                Game1.activeClickableMenu = new ModdedCraftingPage(menu.xPositionOnScreen, menu.yPositionOnScreen, menu.width, menu.height, cooking, fridgeApi);
             }
         }
     }
