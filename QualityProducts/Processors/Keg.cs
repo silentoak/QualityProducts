@@ -76,9 +76,9 @@ namespace SilentOak.QualityProducts.Processors
                     {
                         mead.Name = maybeHoneyType.Value.ToString().SplitCamelCase(join: " ") + " Mead";
                         mead.Price = 2 * input.Price;
+                        mead.honeyType.Value = maybeHoneyType.Value;
                     }
 
-                    mead.honeyType.Value = maybeHoneyType.Value;
                     return mead;
                 },
                 workingEffects: (location, tile) =>
