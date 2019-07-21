@@ -9,8 +9,12 @@ namespace SilentOak.AutoQualityPatch
 {
     internal class ModEntry : Mod
     {
+        /// <summary>Writes messages to the console and log file.</summary>
+        internal static IMonitor StaticMonitor;
+
         public override void Entry(IModHelper helper)
         {
+            StaticMonitor = this.Monitor;
             Util.Init(Helper, Monitor);
 
             Helper.Events.GameLoop.GameLaunched += GameLoop_GameLaunched;

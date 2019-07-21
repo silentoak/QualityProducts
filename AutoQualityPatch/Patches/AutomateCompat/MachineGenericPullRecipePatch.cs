@@ -16,7 +16,7 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
     {
         public static PatchData PatchData = new PatchData(
             assembly: typeof(IRecipe).Assembly,
-            typeNames: new string[] 
+            typeNames: new string[]
             {
                 "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
                 "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
@@ -31,45 +31,53 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
                 typeof(IStorage)
             }
         );
-        
+
         /// <summary>
         /// Replaces the recipes with the ones defined by the processor.
         /// </summary>
         public static bool Prefix(IMachine __instance, ref bool __result, IStorage input)
         {
-            IReflectedProperty<SObject> instanceMachine = Util.Helper.Reflection.GetProperty<SObject>(__instance, "Machine");
-            if (instanceMachine.GetValue() is Processor processor)
+            try
             {
-                IReflectedField<IRecipe[]> privateRecipes = Util.Helper.Reflection.GetField<IRecipe[]>(__instance, "Recipes");
-
-                IRecipe[] recipes = RecipeManager.GetRecipeAdaptorsFor(processor, privateRecipes?.GetValue());
-
-                IConsumable consumable = null;
-                IRecipe acceptingRecipe = null;
-
-                foreach (ITrackedStack item in input.GetItems())
+                IReflectedProperty<SObject> instanceMachine = Util.Helper.Reflection.GetProperty<SObject>(__instance, "Machine");
+                if (instanceMachine.GetValue() is Processor processor)
                 {
-                    acceptingRecipe = recipes.FirstOrDefault(recipe => recipe.AcceptsInput(item));
-                    if (acceptingRecipe != null)
+                    IReflectedField<IRecipe[]> privateRecipes = Util.Helper.Reflection.GetField<IRecipe[]>(__instance, "Recipes");
+
+                    IRecipe[] recipes = RecipeManager.GetRecipeAdaptorsFor(processor, privateRecipes?.GetValue());
+
+                    IConsumable consumable = null;
+                    IRecipe acceptingRecipe = null;
+
+                    foreach (ITrackedStack item in input.GetItems())
                     {
-                        input.TryGetIngredient(item.Sample.ParentSheetIndex, acceptingRecipe.InputCount, out consumable);
-                        break;
+                        acceptingRecipe = recipes.FirstOrDefault(recipe => recipe.AcceptsInput(item));
+                        if (acceptingRecipe != null)
+                        {
+                            input.TryGetIngredient(item.Sample.ParentSheetIndex, acceptingRecipe.InputCount, out consumable);
+                            break;
+                        }
                     }
-                }
 
-                if (acceptingRecipe != null && consumable != null)
-                {
-                    processor.heldObject.Value = acceptingRecipe.Output(consumable.Take());
-                    processor.MinutesUntilReady = acceptingRecipe.Minutes;
-                    __result = true;
+                    if (acceptingRecipe != null && consumable != null)
+                    {
+                        processor.heldObject.Value = acceptingRecipe.Output(consumable.Take());
+                        processor.MinutesUntilReady = acceptingRecipe.Minutes;
+                        __result = true;
+                        return false;
+                    }
+
+                    __result = false;
                     return false;
                 }
 
-                __result = false;
-                return false;
+                return true;
             }
-
-            return true;
+            catch (Exception ex)
+            {
+                ModEntry.StaticMonitor.Log($"Failed overriding Automate.\n{ex}", LogLevel.Error);
+                return true; // run original code instead
+            }
         }
     }
 }
