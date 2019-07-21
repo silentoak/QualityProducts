@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Harmony;
 using SilentOak.Patching.Extensions;
 
+[assembly: InternalsVisibleTo("UnitTests")]
 namespace SilentOak.Patching
 {
     public class PatchData

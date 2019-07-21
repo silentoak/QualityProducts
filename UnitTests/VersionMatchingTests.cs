@@ -2,7 +2,7 @@
 using SilentOak.Patching.Extensions;
 using System;
 
-namespace Patching.Tests
+namespace SilentOak.UnitTests
 {
     [TestFixture]
     public class VersionMatchingTests

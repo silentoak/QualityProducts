@@ -2,10 +2,11 @@
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
+using SilentOak.Patching;
 using SilentOak.Patching.Exceptions;
 using Harmony;
 
-namespace SilentOak.Patching.Tests
+namespace SilentOak.UnitTests
 {
     /// <summary>
     /// Patch manager tests.

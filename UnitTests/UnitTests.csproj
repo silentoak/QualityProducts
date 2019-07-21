@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Patching</AssemblyName>
-    <RootNamespace>SilentOak.Patching</RootNamespace>
+    <AssemblyName>UnitTests</AssemblyName>
+    <RootNamespace>SilentOak.UnitTests</RootNamespace>
     <Version>1.0.0</Version>
     <TargetFramework>net452</TargetFramework>
     <Platforms>x86</Platforms>
@@ -11,6 +11,11 @@
 
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" Version="1.2.0.1" />
+    <PackageReference Include="nunit" Version="3.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Patching\Patching.csproj" />
   </ItemGroup>
 
 </Project>
