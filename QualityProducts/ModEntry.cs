@@ -58,8 +58,8 @@ namespace SilentOak.QualityProducts
                 Helper.Events.GameLoop.Saved += OnSaved;
                 Helper.Events.GameLoop.Saving += OnSaving;
                 Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
-                Helper.Events.World.LocationListChanged += OnLoadLocation;
-                Helper.Events.World.ObjectListChanged += OnPlacingProcessor;
+                Helper.Events.World.LocationListChanged += OnLocationListChanged;
+                Helper.Events.World.ObjectListChanged += OnObjectListChanged;
 
                 if (Config.EnableMeadTextures && SpriteLoader.Init(Helper, Monitor, Config))
                 {
@@ -140,18 +140,15 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">E.</param>
-        private void OnLoadLocation(object sender, LocationListChangedEventArgs e)
+        private void OnLocationListChanged(object sender, LocationListChangedEventArgs e)
         {
             foreach (GameLocation gameLocation in e.Added)
             {
                 Monitor.VerboseLog($"Loading {gameLocation.Name}");
 
-                if (!locationProcessors.ContainsKey(gameLocation))
-                {
-                    locationProcessors.Add(gameLocation, new List<Processor>());
-                }
+                if (!locationProcessors.TryGetValue(gameLocation, out IList<Processor> processors))
+                    locationProcessors[gameLocation] = processors = new List<Processor>();
 
-                List<Processor> processors = new List<Processor>();
                 foreach (SObject @object in gameLocation.Objects.Values)
                 {
                     if (ShouldReplaceWithProcessor(@object, out Processor processor))
@@ -209,9 +206,11 @@ namespace SilentOak.QualityProducts
         /// </summary>
         /// <param name="sender">Sender.</param>
         /// <param name="e">E.</param>
-        private void OnPlacingProcessor(object sender, ObjectListChangedEventArgs e)
+        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
         {
-            IList<Processor> processors = new List<Processor>();
+            if (!locationProcessors.TryGetValue(e.Location, out IList<Processor> processors))
+                locationProcessors[e.Location] = processors = new List<Processor>();
+
             foreach (KeyValuePair<Vector2, SObject> kv in e.Added)
             {
                 if (ShouldReplaceWithProcessor(kv.Value, out Processor processor))
