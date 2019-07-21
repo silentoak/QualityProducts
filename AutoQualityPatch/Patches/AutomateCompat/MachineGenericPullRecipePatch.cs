@@ -57,7 +57,7 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
                     }
                 }
 
-                if (acceptingRecipe != null)
+                if (acceptingRecipe != null && consumable != null)
                 {
                     processor.heldObject.Value = acceptingRecipe.Output(consumable.Take());
                     processor.MinutesUntilReady = acceptingRecipe.Minutes;
