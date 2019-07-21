@@ -753,7 +753,7 @@ namespace QualityProducts.Cooking
                 b.Draw(Game1.mouseCursors, new Vector2(trashCan.bounds.X + 60, trashCan.bounds.Y + 40), new Rectangle(686, 256, 18, 10), Color.White, trashCanLidRotation, new Vector2(16f, 10f), 4f, SpriteEffects.None, 0.86f);
             }
             b.End();
-            b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, null);
+            b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null);
             foreach (ClickableTextureComponent key in pagesOfCraftingRecipes[currentCraftingPage].Keys)
             {
                 if (key.hoverText.Equals("ghosted"))
@@ -774,7 +774,7 @@ namespace QualityProducts.Cooking
                 }
             }
             b.End();
-            b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, null);
+            b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null);
             if (hoverItem != null)
             {
                 drawToolTip(b, hoverText, hoverTitle, hoverItem, heldItem != null, -1, 0, -1, -1, null, -1);
