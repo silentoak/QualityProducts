@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <Reference Include="Automate">
-      <HintPath>..\lib\Automate\Automate.dll</HintPath>
+      <HintPath>$(GamePath)\Mods\Automate\Automate.dll</HintPath>
       <Private>False</Private>
       <IncludeInPackage>false</IncludeInPackage>
     </Reference>
