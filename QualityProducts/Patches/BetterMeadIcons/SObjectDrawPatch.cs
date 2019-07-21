@@ -38,9 +38,9 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
         public static bool Prefix(SObject __instance, SpriteBatch spriteBatch, int x, int y, float alpha = 1f)
         {
             if (
-                !(bool)__instance.bigCraftable
-                || !(bool)__instance.readyForHarvest
-                || __instance.heldObject == null
+                !(bool)__instance.bigCraftable.Value
+                || !(bool)__instance.readyForHarvest.Value
+                || __instance.heldObject.Value == null
                 || !SpriteLoader.TryLoadSprite(__instance.heldObject.Value, out Texture2D texture, out Rectangle sourceRect)
                 )
             {
@@ -66,16 +66,16 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
             spriteBatch.Draw(
                 texture: Game1.bigCraftableSpriteSheet,
                 destinationRectangle: destinationRectangle,
-                sourceRectangle: SObject.getSourceRectForBigCraftable(((bool)__instance.showNextIndex)
+                sourceRectangle: SObject.getSourceRectForBigCraftable(__instance.showNextIndex.Value
                     ? (__instance.ParentSheetIndex + 1) : __instance.ParentSheetIndex),
                 color: Color.White * alpha,
                 rotation: 0f,
                 origin: Vector2.Zero,
                 effects: SpriteEffects.None,
-                layerDepth: Math.Max(0f, ((y + 1) * 64 - 24) / 10000f) + (((int)__instance.parentSheetIndex == 105) ? 0.0035f : 0f) + x * 1E-05f
+                layerDepth: Math.Max(0f, ((y + 1) * 64 - 24) / 10000f) + (__instance.ParentSheetIndex == 105 ? 0.0035f : 0f) + x * 1E-05f
                 );
 
-            if (__instance.Name.Equals("Loom") && (int)__instance.minutesUntilReady > 0)
+            if (__instance.Name.Equals("Loom") && __instance.MinutesUntilReady > 0)
             {
                 spriteBatch.Draw(
                     texture: Game1.objectSpriteSheet,
@@ -90,7 +90,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                 );
             }
 
-            if ((bool)__instance.isLamp && Game1.isDarkOut())
+            if (__instance.isLamp.Value && Game1.isDarkOut())
             {
                 spriteBatch.Draw(
                     texture: Game1.mouseCursors,
@@ -142,8 +142,8 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                 origin: Vector2.Zero,
                 scale: 4f,
                 effects: SpriteEffects.None,
-                layerDepth: (y + 1) * 64 / 10000f + 1E-06f + __instance.tileLocation.X / 10000f
-                    + ((__instance.parentSheetIndex == 105) ? 0.0015f : 0f)
+                layerDepth: (y + 1) * 64 / 10000f + 1E-06f + __instance.TileLocation.X / 10000f
+                    + ((__instance.ParentSheetIndex == 105) ? 0.0015f : 0f)
             );
 
             spriteBatch.Draw(
@@ -161,8 +161,8 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                 origin: new Vector2(8f, 8f),
                 scale: 4f,
                 effects: SpriteEffects.None,
-                layerDepth: (y + 1) * 64 / 10000f + 1E-05f + __instance.tileLocation.X / 10000f
-                    + ((__instance.parentSheetIndex == 105) ? 0.0015f : 0f)
+                layerDepth: (y + 1) * 64 / 10000f + 1E-05f + __instance.TileLocation.X / 10000f
+                    + ((__instance.ParentSheetIndex == 105) ? 0.0015f : 0f)
             );
 
             return false;

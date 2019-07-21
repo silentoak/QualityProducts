@@ -40,10 +40,9 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
         {
             if (
                 @object == null
-                || (bool)@object.bigCraftable 
+                || @object.bigCraftable.Value
                 || @object.ParentSheetIndex != 459
-                || @object.honeyType == null
-                || !@object.honeyType.Value.HasValue
+                || @object.honeyType.Value == null
                 || @object.honeyType.Value.Value == SObject.HoneyType.Wild
                 )
             {

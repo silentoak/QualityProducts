@@ -132,7 +132,7 @@ namespace SilentOak.QualityProducts
                 p => 
                 {
                     p.TileLocation = @object.TileLocation;
-                    p.IsRecipe = (bool)@object.isRecipe;
+                    p.IsRecipe = @object.IsRecipe;
                     p.DisplayName = @object.DisplayName;
                     p.Scale = @object.Scale;
                     p.MinutesUntilReady = @object.MinutesUntilReady;
@@ -188,7 +188,7 @@ namespace SilentOak.QualityProducts
                     return false;
                 }
 
-                if ((bool)@object.bigCraftable)
+                if (@object.bigCraftable.Value)
                 {
                     return false;
                 }
@@ -255,7 +255,7 @@ namespace SilentOak.QualityProducts
                 performToolAction(null, who.currentLocation);
             }
 
-            if ((bool)readyForHarvest)
+            if (readyForHarvest.Value)
             {
                 if (justCheckingForActivity)
                 {

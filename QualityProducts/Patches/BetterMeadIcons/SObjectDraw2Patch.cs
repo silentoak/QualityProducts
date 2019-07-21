@@ -47,7 +47,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                 return false;
             }
 
-            if (__instance.fragility != 2)
+            if (__instance.Fragility != 2)
             {
                 Texture2D shadowTexture = Game1.shadowTexture;
                 spriteBatch.Draw(

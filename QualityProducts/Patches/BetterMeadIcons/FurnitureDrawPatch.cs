@@ -61,7 +61,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
             {
                 float layerDepth;
 
-                if ((int)__instance.furniture_type != Furniture.rug)
+                if (__instance.furniture_type.Value != Furniture.rug)
                 {
                     rectangle = __instance.boundingBox.Value;
                     layerDepth = (rectangle.Bottom - 8) / 10000f;
@@ -74,7 +74,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                 spriteBatch.Draw(
                     texture: Furniture.furnitureTexture,
                     position: Game1.GlobalToLocal(Game1.viewport, drawPosition),
-                    sourceRectangle: __instance.sourceRect,
+                    sourceRectangle: __instance.sourceRect.Value,
                     color: Color.White * alpha,
                     rotation: 0f,
                     origin: Vector2.Zero,
@@ -87,7 +87,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
             {
                 float layerDepth2;
 
-                if ((int)__instance.furniture_type != Furniture.rug)
+                if (__instance.furniture_type.Value != Furniture.rug)
                 {
                     rectangle = __instance.boundingBox.Value;
                     layerDepth2 = (rectangle.Bottom - 8) / 10000f;
@@ -106,7 +106,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                             y * 64 - (__instance.sourceRect.Height * 4 - __instance.boundingBox.Height)
                         )
                     ),
-                    sourceRectangle: __instance.sourceRect,
+                    sourceRectangle: __instance.sourceRect.Value,
                     color: Color.White * alpha,
                     rotation: 0f,
                     origin: Vector2.Zero,
@@ -123,7 +123,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                     viewport: Game1.viewport,
                     globalPosition: new Vector2(
                         __instance.boundingBox.Center.X - 32,
-                        __instance.boundingBox.Center.Y - (((bool)__instance.drawHeldObjectLow) ? 32 : 85)
+                        __instance.boundingBox.Center.Y - (__instance.drawHeldObjectLow.Value ? 32 : 85)
                     )
                 ) + new Vector2(32f, 53f),
                 sourceRectangle: bounds,
@@ -141,7 +141,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                     viewport: Game1.viewport,
                     globalPosition: new Vector2(
                         __instance.boundingBox.Center.X - 32,
-                        __instance.boundingBox.Center.Y - (((bool)__instance.drawHeldObjectLow) ? 32 : 85)
+                        __instance.boundingBox.Center.Y - (__instance.drawHeldObjectLow.Value ? 32 : 85)
                     )
                 ),
                 sourceRectangle: sourceRect,
@@ -153,7 +153,7 @@ namespace SilentOak.QualityProducts.Patches.BetterMeadIcons
                 layerDepth: (__instance.boundingBox.Bottom + 1) / 10000f
             );
 
-            if ((bool)__instance.isOn && (int)__instance.furniture_type == Furniture.fireplace)
+            if (__instance.IsOn && __instance.furniture_type.Value == Furniture.fireplace)
             {
                 Vector2 position4 = Game1.GlobalToLocal(
                     viewport: Game1.viewport,

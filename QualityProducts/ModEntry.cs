@@ -112,7 +112,7 @@ namespace SilentOak.QualityProducts
         /// <param name="processor">Processor to replace the object with.</param>
         private bool ShouldReplaceWithProcessor(SObject @object, out Processor processor)
         {
-            if (@object != null && (bool)@object.bigCraftable && !(@object is Processor))
+            if (@object != null && @object.bigCraftable.Value && !(@object is Processor))
             {
                 processor = Processor.FromObject(@object);
                 if (processor != null && Config.IsEnabled(processor))
