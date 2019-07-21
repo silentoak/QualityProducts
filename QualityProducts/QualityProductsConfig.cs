@@ -17,13 +17,13 @@ namespace SilentOak.QualityProducts
         /// Gets or sets the list of items to have quality enabled.
         /// </summary>
         /// <value>Items to have quality enabled.</value>
-        public ICollection<string> EnableQuality { get; set; }
+        public string[] EnableQuality { get; set; } = new string[0];
 
         /// <summary>
         /// Gets or sets the list of items to have quality disabled.
         /// </summary>
         /// <value>Items to have quality disabled.</value>
-        public ICollection<string> DisableQuality { get; set; }
+        public string[] DisableQuality { get; set; } = new string[0];
 
         /// <summary>
         /// Gets or sets a value indicating whether custom mead texture should be enabled.
