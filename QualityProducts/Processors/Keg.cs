@@ -6,13 +6,14 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Processors
 {
+    /// <summary>A processor which handles keg machines.</summary>
     internal class Keg : Processor
     {
         /*********
-         * Fields
-         *********/
-
-        private static readonly Recipe[] recipes =
+        ** Accessors
+        *********/
+        /// <summary>The available recipes for this processor type.</summary>
+        public override IEnumerable<Recipe> Recipes { get; } = new[]
         {
             // Wheat => Beer
             new Recipe(
@@ -71,8 +72,8 @@ namespace SilentOak.QualityProducts.Processors
                 process: input =>
                 {
                     SObject mead = new SObject(459, 1);
-                    HoneyType? maybeHoneyType = input.honeyType.Value;
-                    if (maybeHoneyType.HasValue && maybeHoneyType.Value != HoneyType.Wild)
+                    SObject.HoneyType? maybeHoneyType = input.honeyType.Value;
+                    if (maybeHoneyType.HasValue && maybeHoneyType.Value != SObject.HoneyType.Wild)
                     {
                         mead.Name = maybeHoneyType.Value.ToString().SplitCamelCase(join: " ") + " Mead";
                         mead.Price = 2 * input.Price;
@@ -99,9 +100,9 @@ namespace SilentOak.QualityProducts.Processors
                     SObject juice = new SObject(350, 1)
                     {
                         Name = input.Name + " Juice",
-                        Price = (int)(2.25 * input.Price)
+                        Price = (int) (2.25 * input.Price)
                     };
-                    juice.preserve.Value = PreserveType.Juice;
+                    juice.preserve.Value = SObject.PreserveType.Juice;
                     juice.preservedParentSheetIndex.Value = input.ParentSheetIndex;
                     return juice;
                 },
@@ -111,7 +112,7 @@ namespace SilentOak.QualityProducts.Processors
                     Animation.PerformGraphics(location, Animation.Bubbles(tile, Color.White));
                 }
             ),
-            
+
             // Fruit => Wine
             new Recipe(
                 name: "Wine",
@@ -125,7 +126,7 @@ namespace SilentOak.QualityProducts.Processors
                         Name = input.Name + " Wine",
                         Price = 3 * input.Price
                     };
-                    wine.preserve.Value = PreserveType.Wine;
+                    wine.preserve.Value = SObject.PreserveType.Wine;
                     wine.preservedParentSheetIndex.Value = input.ParentSheetIndex;
                     return wine;
                 },
@@ -138,34 +139,21 @@ namespace SilentOak.QualityProducts.Processors
         };
 
 
-        /*************
-         * Properties
-         *************/
-
-        public override IEnumerable<Recipe> Recipes => recipes;
-
-
-        /****************
-         * Public methods
-         ****************/
-
-        public Keg() : base(ProcessorTypes.Keg)
-        {
-        }
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        public Keg()
+           : base(ProcessorTypes.Keg) { }
 
 
-        /*******************
-         * Protected methods
-         *******************/
-
-        /***
-         * From StardewValley.Object.checkForAction
-         ***/
-        /// <summary>
-        /// Updates the game stats.
-        /// </summary>
-        /// <param name="object">Previously held object.</param>
-        protected override void UpdateStats(SObject @object)
+        /*********
+        ** Protected methods
+        *********/
+        /// <summary>Update the game stats.</summary>
+        /// <param name="obj">The previously held object.</param>
+        /// <remarks>Derived from <see cref="SObject.checkForAction"/>,</remarks>
+        protected override void UpdateStats(SObject obj)
         {
             Game1.stats.BeveragesMade++;
         }

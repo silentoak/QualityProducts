@@ -5,6 +5,7 @@ using SilentOak.AutoQualityPatch.Utils;
 using SilentOak.Patching;
 using SilentOak.QualityProducts;
 using StardewModdingAPI;
+using StardewValley;
 using SObject = StardewValley.Object;
 
 namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
@@ -16,7 +17,7 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
     {
         public static PatchData PatchData = new PatchData(
             assembly: typeof(IRecipe).Assembly,
-            typeNames: new string[]
+            typeNames: new[]
             {
                 "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
                 "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
@@ -26,10 +27,7 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
                 "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine"
             },
             originalMethodName: "SetInput",
-            originalMethodParams: new Type[]
-            {
-                typeof(IStorage)
-            }
+            originalMethodParams: new[] { typeof(IStorage) }
         );
 
         /// <summary>
@@ -39,30 +37,30 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
         {
             try
             {
-                IReflectedProperty<SObject> instanceMachine = Util.Helper.Reflection.GetProperty<SObject>(__instance, "Machine");
-                if (instanceMachine.GetValue() is Processor processor)
+                SObject machine = Util.Helper.Reflection.GetProperty<SObject>(__instance, "Machine").GetValue();
+                if (QualityProducts.ModEntry.Factory.TryGetFor(machine, out Processor processor))
                 {
-                    IReflectedField<IRecipe[]> privateRecipes = Util.Helper.Reflection.GetField<IRecipe[]>(__instance, "Recipes");
-
-                    IRecipe[] recipes = RecipeManager.GetRecipeAdaptorsFor(processor, privateRecipes?.GetValue());
+                    IRecipe[] automateRecipes = Util.Helper.Reflection.GetField<IRecipe[]>(__instance, "Recipes").GetValue();
+                    IRecipe[] recipes = RecipeManager.GetRecipeAdaptorsFor(processor, automateRecipes);
 
                     IConsumable consumable = null;
-                    IRecipe acceptingRecipe = null;
+                    IRecipe recipe = null;
 
                     foreach (ITrackedStack item in input.GetItems())
                     {
-                        acceptingRecipe = recipes.FirstOrDefault(recipe => recipe.AcceptsInput(item));
-                        if (acceptingRecipe != null)
+                        IRecipe possibleRecipe = recipes.FirstOrDefault(rec => rec.AcceptsInput(item));
+                        if (possibleRecipe != null && input.TryGetIngredient(item.Sample.ParentSheetIndex, possibleRecipe.InputCount, out consumable))
                         {
-                            input.TryGetIngredient(item.Sample.ParentSheetIndex, acceptingRecipe.InputCount, out consumable);
+                            recipe = possibleRecipe;
                             break;
                         }
                     }
 
-                    if (acceptingRecipe != null && consumable != null)
+                    if (recipe != null && consumable != null)
                     {
-                        processor.heldObject.Value = acceptingRecipe.Output(consumable.Take());
-                        processor.MinutesUntilReady = acceptingRecipe.Minutes;
+                        Item inputStack = consumable.Take();
+                        machine.heldObject.Value = recipe.Output(inputStack);
+                        machine.MinutesUntilReady = recipe.Minutes;
                         __result = true;
                         return false;
                     }

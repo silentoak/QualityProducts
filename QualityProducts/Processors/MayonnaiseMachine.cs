@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using StardewValley;
+﻿using System.Collections.Generic;
 using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Processors
 {
+    /// <summary>A processor which handles oil maker machines.</summary>
     internal class MayonnaiseMachine : Processor
     {
         /*********
-         * Fields 
-         *********/
-
-        /// <summary>
-        /// The available recipes for this entity.
-        /// </summary>
-        private static readonly Recipe[] recipes =
+        ** Accessors
+        *********/
+        /// <summary>The available recipes for this processor type.</summary>
+        public override IEnumerable<Recipe> Recipes { get; } = new[]
         {
             // Large Egg (Brown or White) or Dinosaur Egg => 2 Mayo
             new Recipe(
@@ -55,27 +50,11 @@ namespace SilentOak.QualityProducts.Processors
         };
 
 
-        /*************
-         * Properties 
-         *************/
-
-        /// <summary>
-        /// Gets the available recipes for this entity.
-        /// </summary>
-        /// <value>The recipes.</value>
-        public override IEnumerable<Recipe> Recipes => recipes;
-
-
-        /*****************
-         * Public methods
-         *****************/
-
-        /// <summary>
-        /// Instantiates a <see cref="T:QualityProducts.Processors.MayonnaiseMachine"/>.
-        /// </summary>
-        /// <param name="location">Where the entity is.</param>
-        public MayonnaiseMachine() : base(ProcessorTypes.MayonnaiseMachine)
-        {
-        }
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        public MayonnaiseMachine()
+            : base(ProcessorTypes.MayonnaiseMachine) { }
     }
 }

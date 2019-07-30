@@ -1,67 +1,50 @@
-﻿using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+﻿using System.Runtime.CompilerServices;
+using Harmony;
 using QualityProducts.Cooking;
 using SilentOak.Patching;
 using SilentOak.QualityProducts.API;
+using SilentOak.QualityProducts.Patches;
 using SilentOak.QualityProducts.Patches.BetterMeadIcons;
 using SilentOak.QualityProducts.Utils;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
-using SObject = StardewValley.Object;
 
+[assembly: InternalsVisibleTo("AutoQualityPatch")]
 namespace SilentOak.QualityProducts
 {
-    /// <summary>
-    /// Mod entry.
-    /// </summary>
+    /// <summary>The mod entry class.</summary>
     internal class ModEntry : Mod
     {
         /*********
-         * Fields
-         *********/
-
-        /// <summary>The list of processors for each game location.</summary>
-        internal readonly IDictionary<GameLocation, IList<Processor>> locationProcessors = new Dictionary<GameLocation, IList<Processor>>(new ObjectReferenceComparer<GameLocation>());
-
-
-        /*************
-         * Properties      
-         *************/
-
+        ** Fields
+        *********/
         /// <summary>The mod configuration from the player.</summary>
         internal static QualityProductsConfig Config { get; set; }
 
+        /// <summary>Handles mapping object instances to processors.</summary>
+        internal static ProcessorFactory Factory { get; set; } = new ProcessorFactory();
 
-        /*****************
-         * Public methods
-         *****************/
 
-        /// <summary>
-        /// Entry for this mod.
-        /// </summary>
-        /// <param name="helper">Helper.</param>
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
+        /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
-            Util.Init(Helper, Monitor);
+            // read config
+            Config = helper.ReadConfig<QualityProductsConfig>();
 
-            Config = Helper.ReadConfig<QualityProductsConfig>();
-
+            // initialise
+            Util.Init(helper, this.Monitor);
             if (Config.IsAnythingEnabled())
             {
                 if (Config.IsCookingEnabled())
-                {
-                    Helper.Events.Display.MenuChanged += OnCrafting;
-                }
+                    helper.Events.Display.MenuChanged += OnMenuChanged;
 
-                Helper.Events.GameLoop.Saved += OnSaved;
-                Helper.Events.GameLoop.Saving += OnSaving;
-                Helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
-                Helper.Events.World.LocationListChanged += OnLocationListChanged;
-                Helper.Events.World.ObjectListChanged += OnObjectListChanged;
-
-                if (Config.EnableMeadTextures && SpriteLoader.Init(Helper, Monitor, Config))
+                if (Config.EnableMeadTextures && SpriteLoader.Init(helper, this.Monitor, Config))
                 {
                     PatchManager.ApplyAll(
                         typeof(SObjectDrawPatch),
@@ -71,166 +54,27 @@ namespace SilentOak.QualityProducts
                         typeof(FurnitureDrawPatch)
                     );
                 }
+
+                var harmony = HarmonyInstance.Create(this.ModManifest.UniqueID);
+                MachineProcessorPatcher.Init(harmony, Factory);
             }
         }
 
-        /// <summary>
-        /// Gets the API.
-        /// </summary>
-        /// <returns>The API.</returns>
+        /// <summary>Get an API that other mods can access. This is always called after <see cref="Entry" />.</summary>
         public override object GetApi()
         {
             return new QualityProductsAPI(Config);
         }
 
 
-        /*****************
-         * Private methods
-         *****************/
-
-        /// <summary>
-        /// Places the objects in the specified game location.
-        /// </summary>
-        /// <param name="gameLocation">Game location.</param>
-        /// <param name="objects">Objects.</param>
-        /// <typeparam name="T">The 1st type parameter.</typeparam>
-        private void PlaceObjects<T>(GameLocation gameLocation, IList<T> objects) where T : SObject
-        {
-            foreach (T @object in objects)
-            {
-                Monitor.VerboseLog($"Placing `{@object.Name}`:{@object.GetType().Name} at {gameLocation.Name}({@object.TileLocation.X},{@object.TileLocation.Y})");
-                gameLocation.setObject(@object.TileLocation, @object);
-            }
-        }
-
-        /// <summary>
-        /// Checks if the given object should be replaced with a processor.
-        /// </summary>
-        /// <returns><c>true</c>, if the object should be replaced, <c>false</c> otherwise.</returns>
-        /// <param name="object">Object to check.</param>
-        /// <param name="location">Location of the object.</param>
-        /// <param name="processor">Processor to replace the object with.</param>
-        private bool ShouldReplaceWithProcessor(SObject @object, out Processor processor)
-        {
-            if (@object != null && @object.bigCraftable.Value && !(@object is Processor))
-            {
-                processor = Processor.FromObject(@object);
-                if (processor != null && Config.IsEnabled(processor))
-                {
-                    return true;
-                }
-            }
-
-            processor = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Save loaded event handler.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">E.</param>
-        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
-        {
-            locationProcessors.Clear();
-        }
-
-        /// <summary>
-        /// Location list changed event handler.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">E.</param>
-        private void OnLocationListChanged(object sender, LocationListChangedEventArgs e)
-        {
-            foreach (GameLocation gameLocation in e.Added)
-            {
-                Monitor.VerboseLog($"Loading {gameLocation.Name}");
-
-                if (!locationProcessors.TryGetValue(gameLocation, out IList<Processor> processors))
-                    locationProcessors[gameLocation] = processors = new List<Processor>();
-
-                foreach (SObject @object in gameLocation.Objects.Values)
-                {
-                    if (ShouldReplaceWithProcessor(@object, out Processor processor))
-                    {
-                        processors.Add(processor);
-                    }
-                }
-
-                PlaceObjects(gameLocation, processors);
-            }
-        }
-
-        /// <summary>
-        /// Saving event handler.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">E.</param>
-        private void OnSaving(object sender, SavingEventArgs e)
-        {
-            foreach (KeyValuePair<GameLocation, IList<Processor>> kv in locationProcessors)
-            {
-                Monitor.VerboseLog($"Unloading {kv.Key.Name}");
-
-                List<SObject> objects = new List<SObject>();
-                foreach (SObject @object in kv.Key.Objects.Values)
-                {
-                    if (@object is Processor processor)
-                    {
-                        kv.Value.Add(processor);
-                        SObject objectClone = processor.ToObject();
-                        objects.Add(objectClone);
-                    }
-                }
-
-                PlaceObjects(kv.Key, objects);
-            }
-        }
-
-        /// <summary>
-        /// Saved event handler.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">E.</param>
-        private void OnSaved(object sender, SavedEventArgs e)
-        {
-            foreach (KeyValuePair<GameLocation, IList<Processor>> kv in locationProcessors)
-            {
-                PlaceObjects(kv.Key, kv.Value);
-                kv.Value.Clear();
-            }
-        }
-
-        /// <summary>
-        /// Object list changed event handler.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">E.</param>
-        private void OnObjectListChanged(object sender, ObjectListChangedEventArgs e)
-        {
-            if (!locationProcessors.TryGetValue(e.Location, out IList<Processor> processors))
-                locationProcessors[e.Location] = processors = new List<Processor>();
-
-            foreach (KeyValuePair<Vector2, SObject> kv in e.Added)
-            {
-                if (ShouldReplaceWithProcessor(kv.Value, out Processor processor))
-                {
-                    processors.Add(processor);
-                }
-            }
-
-            PlaceObjects(e.Location, processors);
-        }
-
-        /***
-         * From https://github.com/spacechase0/CookingSkill/blob/162be2dd01f2fb728f2e375f83152fe67f4da811/Mod.cs
-         ***/
-        /// <summary>
-        /// Menu changed event handler.
-        /// </summary>
-        /// <param name="sender">Sender.</param>
-        /// <param name="e">E.</param>
-        private void OnCrafting(object sender, MenuChangedEventArgs e)
+        /*********
+        ** Private methods
+        *********/
+        /// <summary>Raised after a game menu is opened, closed, or replaced.</summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event arguments.</param>
+        /// <remarks>Based on https://github.com/spacechase0/CookingSkill/blob/162be2dd01f2fb728f2e375f83152fe67f4da811/Mod.cs </remarks>
+        private void OnMenuChanged(object sender, MenuChangedEventArgs e)
         {
             if (e.NewMenu is CraftingPage menu)
             {

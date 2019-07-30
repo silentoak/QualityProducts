@@ -5,16 +5,14 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Processors
 {
+    /// <summary>A processor which handles preserves jar machines.</summary>
     internal class PreservesJar : Processor
     {
         /*********
-         * Fields
-         *********/
-
-        /// <summary>
-        /// The available recipes for this entity.
-        /// </summary>
-        private static readonly Recipe[] recipes =
+        ** Accessors
+        *********/
+        /// <summary>The available recipes for this processor type.</summary>
+        public override IEnumerable<Recipe> Recipes { get; } = new[]
         {
             // Vegetable => Pickles
             new Recipe(
@@ -30,7 +28,7 @@ namespace SilentOak.QualityProducts.Processors
                         Name = "Pickled " + input.Name
                     };
 
-                    output.preserve.Value = PreserveType.Pickle;
+                    output.preserve.Value = SObject.PreserveType.Pickle;
                     output.preservedParentSheetIndex.Value = input.ParentSheetIndex;
                     return output;
                 },
@@ -54,7 +52,7 @@ namespace SilentOak.QualityProducts.Processors
                         Name = input.Name + " Jelly"
                     };
 
-                    output.preserve.Value = PreserveType.Jelly;
+                    output.preserve.Value = SObject.PreserveType.Jelly;
                     output.preservedParentSheetIndex.Value = input.ParentSheetIndex;
                     return output;
                 },
@@ -66,42 +64,21 @@ namespace SilentOak.QualityProducts.Processors
         };
 
 
-        /*************
-         * Properties
-         *************/
-
-        /// <summary>
-        /// Gets the available recipes for this entity.
-        /// </summary>
-        /// <value>The recipes.</value>
-        public override IEnumerable<Recipe> Recipes => recipes;
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        public PreservesJar()
+            : base(ProcessorTypes.PreservesJar) { }
 
 
-        /****************
-         * Public methods
-         ****************/
-
-        /// <summary>
-        /// Instantiates a <see cref="T:QualityProducts.Processors.PreservesJar"/>.
-        /// </summary>
-        /// <param name="location">Where the entity is.</param>
-        public PreservesJar() : base(ProcessorTypes.PreservesJar)
-        {
-        }
-
-
-        /*******************
-         * Protected methods
-         *******************/
-
-        /***
-         * From StardewValley.Object.checkForAction
-         ***/
-        /// <summary>
-        /// Updates the game stats.
-        /// </summary>
-        /// <param name="object">Previously held object.</param>
-        protected override void UpdateStats(SObject @object)
+        /*********
+        ** Protected methods
+        *********/
+        /// <summary>Update the game stats.</summary>
+        /// <param name="obj">The previously held object.</param>
+        /// <remarks>Derived from <see cref="SObject.checkForAction"/>,</remarks>
+        protected override void UpdateStats(SObject obj)
         {
             Game1.stats.PreservesMade++;
         }

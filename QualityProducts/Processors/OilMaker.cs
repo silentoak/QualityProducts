@@ -5,16 +5,14 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Processors
 {
+    /// <summary>A processor which handles oil maker machines.</summary>
     internal class OilMaker : Processor
     {
         /*********
-         * Fields
-         *********/
-
-        /// <summary>
-        /// The available recipes for this entity.
-        /// </summary>
-        private static readonly Recipe[] recipes =
+        ** Accessors
+        *********/
+        /// <summary>The available recipes for this processor type.</summary>
+        public override IEnumerable<Recipe> Recipes { get; } = new[]
         {
             // Corn => Oil
             new Recipe(
@@ -54,49 +52,32 @@ namespace SilentOak.QualityProducts.Processors
         };
 
 
-        /*************
-         * Properties
-         *************/
-
-        /// <summary>
-        /// Gets the available recipes for this entity.
-        /// </summary>
-        /// <value>The recipes.</value>
-        public override IEnumerable<Recipe> Recipes => recipes;
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        public OilMaker()
+            : base(ProcessorTypes.OilMaker) { }
 
 
-        /****************
-         * Public methods
-         ****************/
-
-        /// <summary>
-        /// Instantiates an <see cref="T:QualityProducts.Processors.OilMaker"/>.
-        /// </summary>
-        /// <param name="location">Where the entity is.</param>
-        public OilMaker() : base(ProcessorTypes.OilMaker)
-        {
-        }
-
-
-        /*******************
-         * Protected methods
-         *******************/
-
-        /// <summary>
-        /// Executes if recipe doesn't specify any input effects.
-        /// </summary>
-        protected override void DefaultInputEffects(GameLocation location)
+        /*********
+        ** Protected methods
+        *********/
+        /// <summary>The input effects to apply if a recipe doesn't specify any.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="location">The location containing the machine.</param>
+        protected override void DefaultInputEffects(SObject machine, GameLocation location)
         {
             location.playSound("bubbles");
             location.playSound("sipTea");
         }
 
-        /// <summary>
-        /// Executes if recipe doesn't specify any working effects.
-        /// </summary>
-        protected override void DefaultWorkingEffects(GameLocation location)
+        /// <summary>The working effects to apply if a recipe doesn't specify any.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="location">The location containing the machine.</param>
+        protected override void DefaultWorkingEffects(SObject machine, GameLocation location)
         {
-            Animation.PerformGraphics(location, Animation.Bubbles(TileLocation, Color.Yellow));
+            Animation.PerformGraphics(location, Animation.Bubbles(machine.TileLocation, Color.Yellow));
         }
     }
 }
