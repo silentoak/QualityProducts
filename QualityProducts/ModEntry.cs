@@ -1,10 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Harmony;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using QualityProducts.Cooking;
-using SilentOak.Patching;
 using SilentOak.QualityProducts.API;
 using SilentOak.QualityProducts.Patches;
-using SilentOak.QualityProducts.Patches.BetterMeadIcons;
 using SilentOak.QualityProducts.Utils;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -38,24 +39,19 @@ namespace SilentOak.QualityProducts
             Config = helper.ReadConfig<QualityProductsConfig>();
 
             // initialise
+            var harmony = HarmonyInstance.Create(this.ModManifest.UniqueID);
             Util.Init(helper, this.Monitor);
             if (Config.IsAnythingEnabled())
             {
                 if (Config.IsCookingEnabled())
                     helper.Events.Display.MenuChanged += OnMenuChanged;
 
-                if (Config.EnableMeadTextures && SpriteLoader.Init(helper, this.Monitor, Config))
+                if (Config.EnableMeadTextures)
                 {
-                    PatchManager.ApplyAll(
-                        typeof(SObjectDrawPatch),
-                        typeof(SObjectDraw2Patch),
-                        typeof(SObjectDrawInMenuPatch),
-                        typeof(SObjectDrawWhenHeld),
-                        typeof(FurnitureDrawPatch)
-                    );
+                    Texture2D meadTexture = this.GetMeadTexture(Config);
+                    if (meadTexture != null)
+                        BetterMeadIconsPatcher.Init(harmony, meadTexture);
                 }
-
-                var harmony = HarmonyInstance.Create(this.ModManifest.UniqueID);
                 MachineProcessorPatcher.Init(harmony, Factory);
             }
         }
@@ -81,6 +77,28 @@ namespace SilentOak.QualityProducts
                 Monitor.VerboseLog("Cooking menu opened. Swapping to custom cooking menu...");
                 bool cooking = Helper.Reflection.GetField<bool>(menu, "cooking").GetValue();
                 Game1.activeClickableMenu = new ModdedCraftingPage(menu.xPositionOnScreen, menu.yPositionOnScreen, menu.width, menu.height, cooking);
+            }
+        }
+
+        /// <summary>Get the mead icon texture.</summary>
+        /// <param name="config">The mod configuration.</param>
+        private Texture2D GetMeadTexture(QualityProductsConfig config)
+        {
+            try
+            {
+                Texture2D meadTexture = this.Helper.Content.Load<Texture2D>(config.TextureForMeadTypes);
+                this.Monitor.Log($"Custom texture \"{config.TextureForMeadTypes}\" loaded.", LogLevel.Trace);
+                return meadTexture;
+            }
+            catch (ArgumentException)
+            {
+                this.Monitor.Log($"Invalid path \"{config.TextureForMeadTypes}\" for texture. Custom textures disabled.", LogLevel.Warn);
+                return null;
+            }
+            catch (ContentLoadException)
+            {
+                this.Monitor.Log($"File \"{config.TextureForMeadTypes}\" could not be loaded. Custom textures disabled.", LogLevel.Warn);
+                return null;
             }
         }
     }

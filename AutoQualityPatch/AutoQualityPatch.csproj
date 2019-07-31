@@ -8,6 +8,7 @@
     <Platforms>x86</Platforms>
     <PlatformTarget>x86</PlatformTarget>
 
+    <EnableHarmony>true</EnableHarmony>
     <IgnoreModFilePatterns>0Harmony.dll, nunit\.framework\.dll, QualityProducts\.(dll|pdb), Patching\.(dll|pdb)</IgnoreModFilePatterns>
   </PropertyGroup>
 
@@ -16,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Patching\Patching.csproj" />
     <ProjectReference Include="..\QualityProducts\QualityProducts.csproj" />
   </ItemGroup>
 

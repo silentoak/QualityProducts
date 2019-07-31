@@ -1,39 +1,57 @@
 ﻿using System;
 using System.Linq;
+using Harmony;
 using Pathoschild.Stardew.Automate;
 using SilentOak.AutoQualityPatch.Utils;
-using SilentOak.Patching;
 using SilentOak.QualityProducts;
 using StardewModdingAPI;
 using StardewValley;
 using SObject = StardewValley.Object;
 
-namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
+namespace SilentOak.AutoQualityPatch.Patches
 {
-    /// <summary>
-    /// Patch for Automate compatibility.
-    /// </summary>
-    internal static class MachineGenericPullRecipePatch
+    /// <summary>Handles patches for compatibility with the Automate mod.</summary>
+    internal static class AutomatePatcher
     {
-        public static PatchData PatchData = new PatchData(
-            assembly: typeof(IRecipe).Assembly,
-            typeNames: new[]
-            {
-                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
-                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
-                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.CheesePressMachine",
-                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.MayonnaiseMachine",
-                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.PreservesJarMachine",
-                "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine"
-            },
-            originalMethodName: "SetInput",
-            originalMethodParams: new[] { typeof(IStorage) }
-        );
+        /*********
+        ** Fields
+        *********/
+        /// <summary>Writes messages to the console and log file.</summary>
+        private static IMonitor Monitor;
 
-        /// <summary>
-        /// Replaces the recipes with the ones defined by the processor.
-        /// </summary>
-        public static bool Prefix(IMachine __instance, ref bool __result, IStorage input)
+        /// <summary>The full Automate machine type names to override.</summary>
+        private static readonly string[] MachineTypeNames =
+        {
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.CheesePressMachine",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.MayonnaiseMachine",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.PreservesJarMachine",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine"
+        };
+
+
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Initialise the patcher.</summary>
+        /// <param name="harmony">The mod's Harmony instance.</param>
+        /// <param name="monitor">Writes messages to the console and log file.</param>
+        public static void Init(HarmonyInstance harmony, IMonitor monitor)
+        {
+            Monitor = monitor;
+
+            foreach (string typeName in MachineTypeNames)
+            {
+                harmony.Patch(
+                    original: AccessTools.Method($"{typeName}:SetInput"),
+                    prefix: new HarmonyMethod(typeof(AutomatePatcher), nameof(AutomatePatcher.SetInput))
+                );
+            }
+        }
+
+        /// <summary>Replaces the recipes with the ones defined by the processor.</summary>
+        public static bool SetInput(IMachine __instance, ref bool __result, IStorage input)
         {
             try
             {
@@ -73,7 +91,7 @@ namespace SilentOak.AutoQualityPatch.Patches.AutomateCompat
             }
             catch (Exception ex)
             {
-                ModEntry.StaticMonitor.Log($"Failed overriding Automate.\n{ex}", LogLevel.Error);
+                Monitor.Log($"Failed overriding Automate.\n{ex}", LogLevel.Error);
                 return true; // run original code instead
             }
         }

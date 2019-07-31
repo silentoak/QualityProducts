@@ -7,7 +7,7 @@
   "EntryDll": "AutoQualityPatch.dll",
   "MinimumApiVersion": "2.11.2",
   "UpdateKeys": [ "Nexus:3609" ],
-  "Dependencies" : [
+  "Dependencies": [
     {
       "UniqueID": "SilentOak.QualityProducts",
       "MinimumVersion": "2.1.3",
