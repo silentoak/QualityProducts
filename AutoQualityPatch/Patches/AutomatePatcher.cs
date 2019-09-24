@@ -19,15 +19,15 @@ namespace SilentOak.AutoQualityPatch.Patches
         /// <summary>Writes messages to the console and log file.</summary>
         private static IMonitor Monitor;
 
-        /// <summary>The full Automate machine type names to override.</summary>
+        /// <summary>The Automate machine full type names to patch.</summary>
         private static readonly string[] MachineTypeNames =
         {
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.CheesePressMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.MayonnaiseMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.PreservesJarMachine",
-            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine"
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.KegMachine, Automate",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.LoomMachine, Automate",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.CheesePressMachine, Automate",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.MayonnaiseMachine, Automate",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.PreservesJarMachine, Automate",
+            "Pathoschild.Stardew.Automate.Framework.Machines.Objects.OilMakerMachine, Automate"
         };
 
 
@@ -41,10 +41,14 @@ namespace SilentOak.AutoQualityPatch.Patches
         {
             Monitor = monitor;
 
-            foreach (string typeName in MachineTypeNames)
+            foreach (string typeName in AutomatePatcher.MachineTypeNames)
             {
+                Type type = Type.GetType(typeName);
+                if (type == null)
+                    throw new InvalidOperationException($"Can't find type '{typeName}' to patch.");
+
                 harmony.Patch(
-                    original: AccessTools.Method($"{typeName}:SetInput"),
+                    original: AccessTools.Method(type, "SetInput"),
                     prefix: new HarmonyMethod(typeof(AutomatePatcher), nameof(AutomatePatcher.SetInput))
                 );
             }
