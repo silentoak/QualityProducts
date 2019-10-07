@@ -4,13 +4,14 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Processors
 {
+    /// <summary>A processor which handles cheese press machines.</summary>
     internal class CheesePress : Processor
     {
         /*********
-         * Fields
-         *********/
-
-        private static readonly Recipe[] recipes =
+        ** Accessors
+        *********/
+        /// <summary>The available recipes for this processor type.</summary>
+        public override IEnumerable<Recipe> Recipes { get; } = new[]
         {
             // Goat Milk => Goat Cheese
             new Recipe(
@@ -50,43 +51,26 @@ namespace SilentOak.QualityProducts.Processors
         };
 
 
-        /*************
-         * Properties 
-         *************/
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        public CheesePress()
+            : base(ProcessorTypes.CheesePress) { }
 
-        public override IEnumerable<Recipe> Recipes => recipes;
 
-
-        /****************
-         * Public methods
-         ****************/
-
-        public CheesePress() : base(ProcessorTypes.CheesePress)
+        /*********
+        ** Protected methods
+        *********/
+        /// <summary>Update the game stats.</summary>
+        /// <param name="obj">The previously held object.</param>
+        /// <remarks>Derived from <see cref="SObject.checkForAction"/>,</remarks>
+        protected override void UpdateStats(SObject obj)
         {
-        }
-
-
-        /*******************
-         * Protected methods
-         *******************/
-
-        /***
-         * From StardewValley.Object.checkForAction
-         ***/
-        /// <summary>
-        /// Updates the game stats.
-        /// </summary>
-        /// <param name="object">Previously held object.</param>
-        protected override void UpdateStats(SObject @object)
-        {
-            if (@object.ParentSheetIndex == 426)
-            {
+            if (obj.ParentSheetIndex == 426)
                 Game1.stats.GoatCheeseMade++;
-            }
             else
-            {
                 Game1.stats.CheeseMade++;
-            }
         }
     }
 }

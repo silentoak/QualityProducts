@@ -390,9 +390,9 @@ namespace QualityProducts.Cooking
             base.receiveKeyPress(key);
             if (key.Equals(Keys.Delete) && heldItem != null && heldItem.canBeTrashed())
             {
-                if (heldItem is SObject && Game1.player.specialItems.Contains(heldItem.parentSheetIndex))
+                if (heldItem is SObject && Game1.player.specialItems.Contains(heldItem.ParentSheetIndex))
                 {
-                    Game1.player.specialItems.Remove(heldItem.parentSheetIndex);
+                    Game1.player.specialItems.Remove(heldItem.ParentSheetIndex);
                 }
                 heldItem = null;
                 Game1.playSound("trashcan");
@@ -473,9 +473,9 @@ namespace QualityProducts.Cooking
             }
             if (trashCan != null && trashCan.containsPoint(x, y) && heldItem != null && heldItem.canBeTrashed())
             {
-                if (heldItem is SObject && Game1.player.specialItems.Contains(heldItem.parentSheetIndex))
+                if (heldItem is SObject && Game1.player.specialItems.Contains(heldItem.ParentSheetIndex))
                 {
-                    Game1.player.specialItems.Remove(heldItem.parentSheetIndex);
+                    Game1.player.specialItems.Remove(heldItem.ParentSheetIndex);
                 }
                 heldItem = null;
                 Game1.playSound("trashcan");
@@ -560,7 +560,7 @@ namespace QualityProducts.Cooking
             }
             if (cooking)
             {
-                Game1.player.cookedRecipe(heldItem.parentSheetIndex);
+                Game1.player.cookedRecipe(heldItem.ParentSheetIndex);
             }
             if (!cooking)
             {
@@ -590,7 +590,7 @@ namespace QualityProducts.Cooking
             Util.Monitor.VerboseLog($"Selecting items: ");
             List<Ingredient> selected = new List<Ingredient>();
             Dictionary<int, int> recipeList = Util.Helper.Reflection.GetField<Dictionary<int, int>>(recipe, "recipeList").GetValue();
-            NetObjectList<Item> playerItemList = Game1.player.items;
+            IList<Item> playerItemList = Game1.player.Items;
 
             Util.Monitor.VerboseLog($"Looking in inventory");
             for (int ingredientIdx = recipeList.Count - 1; ingredientIdx >= 0; ingredientIdx--)
@@ -601,7 +601,7 @@ namespace QualityProducts.Cooking
                 for (int itemIdx = playerItemList.Count - 1; itemIdx >= 0; itemIdx--)
                 {
                     Item playerItem = playerItemList[itemIdx];
-                    if (playerItem != null && playerItem is SObject playerObject && !(playerItem as SObject).bigCraftable && (playerItem.parentSheetIndex == ingredientID || playerItem.Category == ingredientID))
+                    if (playerItem is SObject playerObject && !playerObject.bigCraftable.Value && (playerItem.ParentSheetIndex == ingredientID || playerItem.Category == ingredientID))
                     {
                         Util.Monitor.VerboseLog($"Selected {playerObject.Stack} {playerObject.DisplayName} (quality {playerObject.Quality})");
                         recipeList[ingredientID] -= playerItem.Stack;
@@ -624,7 +624,7 @@ namespace QualityProducts.Cooking
                     for (int itemIdx = fridgeItemList.Count - 1; itemIdx >= 0; itemIdx--)
                     {
                         Item fridgeItem = fridgeItemList[itemIdx];
-                        if (fridgeItem != null && fridgeItem is SObject fridgeObject && (fridgeItem.parentSheetIndex == ingredientID || fridgeItem.Category == ingredientID))
+                        if (fridgeItem != null && fridgeItem is SObject fridgeObject && (fridgeItem.ParentSheetIndex == ingredientID || fridgeItem.Category == ingredientID))
                         {
                             Util.Monitor.VerboseLog($"Selected {fridgeObject.Stack} {fridgeObject.DisplayName} with quality {fridgeObject.Quality}");
                             recipeList[ingredientID] -= fridgeItem.Stack;
@@ -753,7 +753,7 @@ namespace QualityProducts.Cooking
                 b.Draw(Game1.mouseCursors, new Vector2(trashCan.bounds.X + 60, trashCan.bounds.Y + 40), new Rectangle(686, 256, 18, 10), Color.White, trashCanLidRotation, new Vector2(16f, 10f), 4f, SpriteEffects.None, 0.86f);
             }
             b.End();
-            b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null, null);
+            b.Begin(SpriteSortMode.FrontToBack, BlendState.NonPremultiplied, SamplerState.PointClamp, null, null, null);
             foreach (ClickableTextureComponent key in pagesOfCraftingRecipes[currentCraftingPage].Keys)
             {
                 if (key.hoverText.Equals("ghosted"))
@@ -774,7 +774,7 @@ namespace QualityProducts.Cooking
                 }
             }
             b.End();
-            b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, null);
+            b.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null);
             if (hoverItem != null)
             {
                 drawToolTip(b, hoverText, hoverTitle, hoverItem, heldItem != null, -1, 0, -1, -1, null, -1);
@@ -802,7 +802,7 @@ namespace QualityProducts.Cooking
             }
             if (hoverRecipe != null)
             {
-                drawHoverText(b, " ", Game1.smallFont, (heldItem != null) ? 48 : 0, (heldItem != null) ? 48 : 0, -1, hoverRecipe.DisplayName, -1, (cooking && lastCookingHover != null && Game1.objectInformation[lastCookingHover.parentSheetIndex].Split('/').Length > 7) ? Game1.objectInformation[lastCookingHover.parentSheetIndex].Split('/')[7].Split(' ') : null, lastCookingHover, 0, -1, -1, -1, -1, 1f, hoverRecipe);
+                drawHoverText(b, " ", Game1.smallFont, (heldItem != null) ? 48 : 0, (heldItem != null) ? 48 : 0, -1, hoverRecipe.DisplayName, -1, (cooking && lastCookingHover != null && Game1.objectInformation[lastCookingHover.ParentSheetIndex].Split('/').Length > 7) ? Game1.objectInformation[lastCookingHover.ParentSheetIndex].Split('/')[7].Split(' ') : null, lastCookingHover, 0, -1, -1, -1, -1, 1f, hoverRecipe);
             }
         }
     }

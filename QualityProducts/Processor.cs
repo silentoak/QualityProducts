@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using SilentOak.QualityProducts.Extensions;
 using SilentOak.QualityProducts.Processors;
 using SilentOak.QualityProducts.Utils;
 using StardewValley;
@@ -10,371 +8,219 @@ using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts
 {
-    /// <summary>
-    /// An entity that is capable of processing items into products.
-    /// </summary>
-    public abstract class Processor : SObject
+    /// <summary>Handles processing logic for a particular machine type.</summary>
+    public abstract class Processor
     {
         /*********
-         * Types
-         ********/
-
-        /// <summary>
-        /// The available processor types.
-        /// </summary>
-        public enum ProcessorTypes
-        {
-            Keg = 12,
-            PreservesJar = 15,
-            CheesePress = 16,
-            Loom = 17,
-            OilMaker = 19,
-            MayonnaiseMachine = 24
-        }
+        ** Fields
+        *********/
+        /// <summary>The current recipes for known machines.</summary>
+        private IDictionary<SObject, Recipe> CurrentRecipes { get; } = new Dictionary<SObject, Recipe>(new ObjectReferenceComparer<SObject>());
 
 
-        /*************
-         * Properties
-         *************/
+        /*********
+        ** Accessors
+        *********/
+        /// <summary>The processor type.</summary>
+        public ProcessorTypes ProcessorType { get; }
 
-        /// <summary>
-        /// Gets the type of the processor.
-        /// </summary>
-        /// <value>The type of the processor.</value>
-        public ProcessorTypes ProcessorType => (ProcessorTypes)ParentSheetIndex;
+        /// <summary>A human-readable name for the processor type.</summary>
+        public string Name => this.ProcessorType.ToString();
 
-        /// <summary>
-        /// Gets the available recipes for this entity.
-        /// </summary>
-        /// <value>The recipes.</value>
+        /// <summary>The available recipes for this processor type.</summary>
         public abstract IEnumerable<Recipe> Recipes { get; }
 
-        /// <summary>
-        /// Gets or sets the current recipe.
-        /// </summary>
-        /// <value>The current recipe.</value>
-        private Recipe CurrentRecipe { get; set; }
 
-
-        /****************
-         * Public methods
-         ****************/
-
-        /// <summary>
-        /// Gets the type of the processor for the corresponding index.
-        /// </summary>
-        /// <returns>The processor type.</returns>
-        /// <param name="parentSheetIndex">Parent sheet index.</param>
-        public static ProcessorTypes? GetProcessorType(int parentSheetIndex)
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Override the object drop-in action if needed.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="dropInItem">The item dropped in.</param>
+        /// <param name="probe">Whether the game is only checking if an action is possible.</param>
+        /// <param name="who">The player performing the action.</param>
+        /// <param name="processed">Whether the input was handled by the machine.</param>
+        /// <returns>Returns whether the method was successfully overridden.</returns>
+        /// <remarks>Modified from <see cref="SObject.performObjectDropInAction"/>.</remarks>
+        public bool TryPerformObjectDropInAction(SObject machine, Item dropInItem, bool probe, Farmer who, ref bool processed)
         {
-            if (Enum.IsDefined(typeof(ProcessorTypes), parentSheetIndex))
+            if (dropInItem is SObject input)
             {
-                return (ProcessorTypes)Enum.ToObject(typeof(ProcessorTypes), parentSheetIndex);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Creates a new instance of the specified processor type.
-        /// </summary>
-        /// <returns>The new processor instance.</returns>
-        /// <param name="processorType">Processor type to be instantiated.</param>
-        public static Processor Create(ProcessorTypes processorType)
-        {
-            switch (processorType)
-            {
-                case ProcessorTypes.Keg:
-                    return new Keg();
-                case ProcessorTypes.PreservesJar:
-                    return new PreservesJar();
-                case ProcessorTypes.CheesePress:
-                    return new CheesePress();
-                case ProcessorTypes.Loom:
-                    return new Loom();
-                case ProcessorTypes.OilMaker:
-                    return new OilMaker();
-                case ProcessorTypes.MayonnaiseMachine:
-                    return new MayonnaiseMachine();
-                default:
-                    throw new UnimplementedCaseException($"Enum value {Enum.GetName(typeof(ProcessorTypes), processorType)} of {typeof(ProcessorTypes)} has no corresponding case");
-            }
-        }
-
-        /// <summary>
-        /// Creates a new instance of the specified processor type, initializing it with the specified initializer.
-        /// </summary>
-        /// <returns>The new processor instance.</returns>
-        /// <param name="processorType">Processor type to be instantiated.</param>
-        /// <param name="initializer">Initializer.</param>
-        public static Processor Create(ProcessorTypes processorType, Action<Processor> initializer)
-        {
-            Processor newObj = Create(processorType);
-            initializer(newObj);
-            return newObj;
-        }
-
-        /// <summary>
-        /// Creates a processor instance based on the specified Stardew Valley object.
-        /// </summary>
-        /// <returns>The new processor instance.</returns>
-        /// <param name="object">Reference object.</param>
-        public static Processor FromObject(SObject @object)
-        {
-            if (!@object.bigCraftable.Value)
-            {
-                return null;
-            }
-
-            ProcessorTypes? processorType = GetProcessorType(@object.ParentSheetIndex);
-            if (processorType != null) {
-                Processor processor = Create(processorType.Value,
-                p => 
+                if (machine.heldObject.Value != null || input.bigCraftable.Value)
                 {
-                    p.TileLocation = @object.TileLocation;
-                    p.IsRecipe = (bool)@object.isRecipe;
-                    p.DisplayName = @object.DisplayName;
-                    p.Scale = @object.Scale;
-                    p.MinutesUntilReady = @object.MinutesUntilReady;
-                });
-
-                processor.owner.Value = @object.owner.Value;
-                processor.heldObject.Value = @object.heldObject.Value;
-                processor.readyForHarvest.Value = @object.readyForHarvest.Value;
-
-                return processor;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Creates a new regular Stardew Valley object with the same attributes as this one.  
-        /// </summary>
-        /// <returns>The new object.</returns>
-        public SObject ToObject()
-        {
-            SObject @object = new SObject(TileLocation, ParentSheetIndex)
-            {
-                IsRecipe = IsRecipe,
-                Name = Name,
-                DisplayName = DisplayName,
-                Scale = Scale,
-                MinutesUntilReady = MinutesUntilReady
-            };
-
-            @object.owner.Value = owner.Value;
-            @object.heldObject.Value = heldObject.Value;
-            @object.readyForHarvest.Value = readyForHarvest.Value;
-
-            return @object;
-        }
-
-        /***
-         * Modified from StardewValley.Object.performObjectDropInAction
-         **/
-        /// <summary>
-        /// Performs the object drop in action.
-        /// </summary>
-        /// <returns><c>true</c>, if object drop in action was performed, <c>false</c> otherwise.</returns>
-        /// <param name="dropInItem">Drop in item.</param>
-        /// <param name="probe">If set to <c>true</c> probe.</param>
-        /// <param name="who">Who.</param>
-        public sealed override bool performObjectDropInAction(Item dropInItem, bool probe, Farmer who)
-        {
-            if (dropInItem is SObject @object)
-            {
-                if (heldObject.Value != null)
-                {
-                    return false;
+                    processed = false;
+                    return true;
                 }
 
-                if ((bool)@object.bigCraftable)
-                {
-                    return false;
-                }
-
-                if (!probe && @object != null && heldObject.Value == null)
-                {
-                    scale.X = 5f;
-                }
+                if (!probe && machine.heldObject.Value == null)
+                    machine.scale.X = 5f;
 
                 /* 
                  * The base method will be called only if the object to be
                  * inserted is not an SObject, or a recipe for it was found but
                  * it was disabled in the config.
                  */
-                if (!TryForRecipe(@object, out Recipe recipe))
+                if (!TryForRecipe(input, out Recipe recipe))
                 {
-                    return false;
+                    processed = false;
+                    return true;
                 }
 
                 if (!ModEntry.Config.IsEnabled(recipe, this))
                 {
                     Util.Monitor.VerboseLog($"{recipe.Name} is disabled; fallback to default behaviour.");
-                    return base.performObjectDropInAction(dropInItem, probe, who);
+                    return false;
                 }
 
                 if (probe)
                 {
                     // awful, but it's what vanilla SDV does, so must be done for compatibility with other mods.
-                    heldObject.Value = recipe.Process(@object); 
+                    machine.heldObject.Value = recipe.Process(input);
+                    processed = true;
                     return true;
                 }
 
-                if (PerformProcessing(@object, who, recipe))
+                if (PerformProcessing(machine, input, who, recipe))
                 {
-                    Util.Monitor.VerboseLog($"Inserted {@object.DisplayName} (quality {@object.Quality}) into {Name} @({TileLocation.X},{TileLocation.Y})");
-                    Util.Monitor.VerboseLog($"{Name} @({TileLocation.X},{TileLocation.Y}) is producing {heldObject.Value.DisplayName} (quality {heldObject.Value.Quality})");
+                    Vector2 tile = machine.TileLocation;
+                    var output = machine.heldObject.Value;
+                    Util.Monitor.VerboseLog($"Inserted {input.DisplayName} (quality {input.Quality}) into {machine.Name} @({tile.X},{tile.Y})");
+                    Util.Monitor.VerboseLog($"{machine.Name} @({tile.X},{tile.Y}) is producing {output?.DisplayName} (quality {output?.Quality})");
+                    processed = true;
                     return true;
                 }
 
-                return false;
+                processed = false;
+                return true;
             }
 
-            return base.performObjectDropInAction(dropInItem, probe, who);
+            return false;
         }
 
-        /***
-         * Modified from StardewValley.Object.checkForAction
-         ***/
-        /// <summary>
-        /// Checks for action, executing if available when <paramref name="justCheckingForActivity"/> is false.
-        /// </summary>
-        /// <returns><c>true</c>, if action was performed, <c>false</c> otherwise.</returns>
-        /// <param name="who">Farmer that requested for action.</param>
-        /// <param name="justCheckingForActivity">If set to <c>true</c>, doesn't execute any available action.</param>
-        public sealed override bool checkForAction(Farmer who, bool justCheckingForActivity = false)
+        /// <summary>Override the action to check for action if needed.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="who">The player performing the action.</param>
+        /// <param name="probe">Whether the game is only checking if an action is possible.</param>
+        /// <param name="processed">Whether the action was handled by the machine.</param>
+        /// <returns>Returns whether the method was successfully overridden.</returns>
+        /// <remarks>Modified from <see cref="SObject.checkForAction"/>.</remarks>
+        public bool TryCheckForAction(SObject machine, Farmer who, bool probe, ref bool processed)
         {
-            if (!justCheckingForActivity && who != null
+            if (!probe && who != null
                 && who.currentLocation.isObjectAtTile(who.getTileX(), who.getTileY() - 1)
                 && who.currentLocation.isObjectAtTile(who.getTileX(), who.getTileY() + 1)
                 && who.currentLocation.isObjectAtTile(who.getTileX() + 1, who.getTileY())
                 && who.currentLocation.isObjectAtTile(who.getTileX() - 1, who.getTileY())
                 && !who.currentLocation.getObjectAtTile(who.getTileX(), who.getTileY() - 1).isPassable() && !who.currentLocation.getObjectAtTile(who.getTileX(), who.getTileY() + 1).isPassable() && !who.currentLocation.getObjectAtTile(who.getTileX() - 1, who.getTileY()).isPassable() && !who.currentLocation.getObjectAtTile(who.getTileX() + 1, who.getTileY()).isPassable())
             {
-                performToolAction(null, who.currentLocation);
+                machine.performToolAction(null, who.currentLocation);
             }
 
-            if ((bool)readyForHarvest)
+            if (machine.readyForHarvest.Value)
             {
-                if (justCheckingForActivity)
+                if (probe)
                 {
+                    processed = true;
                     return true;
                 }
 
                 if (who.IsLocalPlayer)
                 {
-                    SObject value2 = heldObject.Value;
-                    heldObject.Value = null;
-                    if (!who.addItemToInventoryBool(value2, false))
+                    SObject value2 = machine.heldObject.Value;
+                    machine.heldObject.Value = null;
+                    if (!who.addItemToInventoryBool(value2))
                     {
-                        heldObject.Value = value2;
+                        machine.heldObject.Value = value2;
                         Game1.showRedMessage(Game1.content.LoadString("Strings\\StringsFromCSFiles:Crop.cs.588"));
-                        return false;
+
+                        processed = false;
+                        return true;
                     }
                     Game1.playSound("coin");
                     UpdateStats(value2);
                 }
 
-                heldObject.Value = null;
-                readyForHarvest.Value = false;
-                showNextIndex.Value = false;
+                machine.heldObject.Value = null;
+                machine.readyForHarvest.Value = false;
+                machine.showNextIndex.Value = false;
+
+                processed = true;
                 return true;
             }
-            return false;
+
+            processed = false;
+            return true;
         }
 
-        /***
-         * Modified from StardewValley.Object.addWorkingAnimation
-         **/
-        /// <summary>
-        /// Adds this entity's working animation to its location.
-        /// </summary>
-        /// <param name="environment">Game location.</param>
-        public sealed override void addWorkingAnimation(GameLocation environment)
+        /// <summary>Adds this entity's working animation to its location.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="environment">The in-game location containing the machine.</param>
+        /// <returns>Returns whether the method was successfully overridden.</returns>
+        /// <remarks>Modified from <see cref="SObject.addWorkingAnimation"/>.</remarks>
+        public bool TryAddWorkingAnimation(SObject machine, GameLocation environment)
         {
             /* 
              * If not doing anything, then the recipe was disabled
              * and it should fall back on the game logic
              */
-            if (CurrentRecipe == null)
-            {
-                base.addWorkingAnimation(environment);
-                return;
-            }
+            Recipe recipe = this.GetCurrentRecipe(machine);
+            if (recipe == null || environment == null || environment.farmers.Count == 0)
+                return false;
 
-            if (environment != null && environment.farmers.Count != 0)
-            {
-                AddWorkingEffects(environment);
-            }
+            AddWorkingEffects(machine, environment, recipe);
+            return true;
         }
 
 
-        /*******************
-         * Protected methods
-         *******************/
-
-        /// <summary>
-        /// Instantiates a <see cref="T:QualityProducts.Processor"/> of the given type.
-        /// </summary>
-        /// <param name="processorType">Processor type.</param>
-        /// <param name="location">Where the entity is.</param>
-        protected Processor(ProcessorTypes processorType) : base(Vector2.Zero, (int)processorType, false)
+        /*********
+        ** Protected methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        /// <param name="type">The processor type.</param>
+        protected Processor(ProcessorTypes type)
         {
+            this.ProcessorType = type;
         }
 
-        /// <summary>
-        /// Updates the game stats.
-        /// </summary>
-        /// <param name="object">Previously held object.</param>
-        protected virtual void UpdateStats(SObject @object)
-        {
-            return; 
-        }
+        /// <summary>Update the game stats.</summary>
+        /// <param name="obj">The previously held object.</param>
+        /// <remarks>Derived from <see cref="SObject.checkForAction"/>,</remarks>
+        protected virtual void UpdateStats(SObject obj) { }
 
-        /// <summary>
-        /// Executes if recipe doesn't specify any input effects
-        /// </summary>
-        protected virtual void DefaultInputEffects(GameLocation location)
+        /// <summary>The input effects to apply if a recipe doesn't specify any.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="location">The location containing the machine.</param>
+        protected virtual void DefaultInputEffects(SObject machine, GameLocation location)
         {
             location.playSound("Ship");
         }
 
-        /// <summary>
-        /// Executes if recipe doesn't specify any working effects
-        /// </summary>
-        protected virtual void DefaultWorkingEffects(GameLocation location)
+        /// <summary>The working effects to apply if a recipe doesn't specify any.</summary>
+        /// <param name="machine">The machine being processed.</param>
+        /// <param name="location">The location containing the machine.</param>
+        protected virtual void DefaultWorkingEffects(SObject machine, GameLocation location) { }
+
+
+        /// <summary>Get a recipe which accepts the given input.</summary>
+        /// <param name="input">The ingredient for which to find a recipe.</param>
+        /// <param name="foundRecipe">The recipe matching the input, if any.</param>
+        /// <returns>Returns whether a recipe was found.</returns>
+        private bool TryForRecipe(SObject input, out Recipe foundRecipe)
         {
-            return;
-        }
-
-
-        /******************
-         * Private methods
-         ******************/
-
-        /// <summary>
-        /// Checks if item is ingredient of an available recipe, setting <see cref="CurrentRecipe"/> accordingly.
-        /// </summary>
-        /// <returns><c>true</c>, if found a recipe with the given ingredient, <c>false</c> otherwise.</returns>
-        /// <param name="object">Object.</param>
-        private bool TryForRecipe(SObject @object, out Recipe foundRecipe)
-        {
-            foundRecipe = Recipes.FirstOrDefault(recipe => recipe.AcceptsInput(@object));
+            foundRecipe = Recipes.FirstOrDefault(recipe => recipe.AcceptsInput(input));
             return foundRecipe != null;
         }
 
-
-        /// <summary>
-        /// Performs item processing.
-        /// </summary>
-        /// <returns><c>true</c> if started processing, <c>false</c> otherwise.</returns>
-        /// <param name="object">Object to be processed.</param>
-        /// <param name="who">Farmer that initiated processing.</param>
-        private bool PerformProcessing(SObject @object, Farmer who, Recipe recipe)
+        /// <summary>Process input for a machine.</summary>
+        /// <param name="machine">The machine to process.</param>
+        /// <param name="input">The ingredient to process.</param>
+        /// <param name="who">The player who initiated processing.</param>
+        /// <param name="recipe">The recipe to process.</param>
+        /// <returns>Returns whether the machine started processing.</returns>
+        private bool PerformProcessing(SObject machine, SObject input, Farmer who, Recipe recipe)
         {
-            int amount = recipe.GetAmount(@object);
-            if (amount > @object.Stack)
+            int amount = recipe.GetAmount(input);
+            if (amount > input.Stack)
             {
                 recipe.FailAmount();
                 return false;
@@ -382,55 +228,63 @@ namespace SilentOak.QualityProducts
 
             if (amount > 1)
             {
-                @object.Stack -= amount - 1;
-                if (@object.Stack <= 0)
-                {
-                    who.removeItemFromInventory(@object);
-                }
+                input.Stack -= amount - 1;
+                if (input.Stack <= 0)
+                    who.removeItemFromInventory(input);
             }
 
-            CurrentRecipe = recipe;
-            heldObject.Value = CurrentRecipe.Process(@object);
-            minutesUntilReady.Value = CurrentRecipe.Minutes;
+            CurrentRecipes[machine] = recipe;
+            machine.heldObject.Value = recipe.Process(input);
+            machine.MinutesUntilReady = recipe.Minutes;
 
             /* Both of these need to be below the CurrentRecipe assignment above. */
-            AddInputEffects(who.currentLocation);
-            AddWorkingEffects(who.currentLocation);
+            AddInputEffects(machine, who.currentLocation, recipe);
+            AddWorkingEffects(machine, who.currentLocation, recipe);
 
             return true;
         }
 
-        /// <summary>
-        /// Adds this entity's input animation to its location.
-        /// Assumes <see cref="CurrentRecipe"/> is not null.
-        /// </summary>
-        private void AddInputEffects(GameLocation location)
+        /// <summary>Trigger machine animations when an item is input.</summary>
+        /// <param name="machine">The machine instance.</param>
+        /// <param name="location">The location containing the machine.</param>
+        /// <param name="recipe">The recipe being processed.</param>
+        private void AddInputEffects(SObject machine, GameLocation location, Recipe recipe)
         {
-            if (CurrentRecipe.InputEffects != null)
-            {
-                CurrentRecipe.InputEffects(location, TileLocation);
-            }
+            if (recipe?.InputEffects != null)
+                recipe.InputEffects(location, machine.TileLocation);
             else
-            {
-                DefaultInputEffects(location);
-            }
+                this.DefaultInputEffects(machine, location);
         }
 
-        /// <summary>
-        /// Adds this entity's working animation to its location.
-        /// Assumes <see cref="CurrentRecipe"/> is not null.
-        /// </summary>
-        private void AddWorkingEffects(GameLocation location)
+        /// <summary>Trigger machine animations when the machine is working.</summary>
+        /// <param name="machine">The machine instance.</param>
+        /// <param name="location">The location containing the machine.</param>
+        /// <param name="recipe">The recipe being processed.</param>
+        private void AddWorkingEffects(SObject machine, GameLocation location, Recipe recipe)
         {
-            if (CurrentRecipe.WorkingEffects != null)
-            {
-                CurrentRecipe.WorkingEffects(location, TileLocation);
-            }
+            if (recipe?.WorkingEffects != null)
+                recipe.WorkingEffects(location, machine.TileLocation);
             else
-            {
-                DefaultWorkingEffects(location);
-            }
+                this.DefaultWorkingEffects(machine, location);
         }
 
+        /// <summary>Get the current recipe for a machine.</summary>
+        /// <param name="obj">The machine instance.</param>
+        private Recipe GetCurrentRecipe(SObject obj)
+        {
+            // no current recipe
+            if (!this.CurrentRecipes.TryGetValue(obj, out Recipe recipe))
+                return null;
+
+            // recipe is outdated
+            if (obj.heldObject.Value == null)
+            {
+                this.CurrentRecipes.Remove(obj);
+                return null;
+            }
+
+            // recipe seems valid
+            return recipe;
+        }
     }
 }

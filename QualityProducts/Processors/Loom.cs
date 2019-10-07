@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using StardewValley;
+﻿using System.Collections.Generic;
 using SObject = StardewValley.Object;
 
 namespace SilentOak.QualityProducts.Processors
 {
+    /// <summary>A processor which handles loom machines.</summary>
     internal class Loom : Processor
     {
         /*********
-         * Fields
-         *********/
-
-        private static readonly Recipe[] recipes =
+        ** Accessors
+        *********/
+        /// <summary>The available recipes for this processor type.</summary>
+        public override IEnumerable<Recipe> Recipes { get; } = new[]
         {
             // Wool => Cloth
             new Recipe(
@@ -26,35 +23,11 @@ namespace SilentOak.QualityProducts.Processors
         };
 
 
-        /*************
-         * Properties
-         *************/
-
-        public override IEnumerable<Recipe> Recipes => recipes;
-
-
-        /****************
-         * Public methods
-         ****************/
-
-        /// <summary>
-        /// Instantiates a <see cref="T:QualityProducts.Processors.Loom"/>.
-        /// </summary>
-        /// <param name="location">Where the entity is.</param>
-        public Loom() : base(ProcessorTypes.Loom)
-        {
-        }
-
-        /*******************
-         * Protected methods
-         *******************/
-
-        /// <summary>
-        /// Executes if recipe doesn't specify any input effects
-        /// </summary>
-        protected override void DefaultInputEffects(GameLocation location)
-        {
-            location.playSound("Ship");
-        }
+        /*********
+        ** Public methods
+        *********/
+        /// <summary>Construct an instance.</summary>
+        public Loom()
+            : base(ProcessorTypes.Loom) { }
     }
 }

@@ -14,7 +14,7 @@ namespace SilentOak.AutoQualityPatch
         /// <summary>
         /// The recipe adaptors for each processor type.
         /// </summary>
-        private static readonly Dictionary<Processor.ProcessorTypes, IRecipe[]> _recipeAdaptorsOfProcessorType = new Dictionary<Processor.ProcessorTypes, IRecipe[]>();
+        private static readonly Dictionary<ProcessorTypes, IRecipe[]> _recipeAdaptorsOfProcessorType = new Dictionary<ProcessorTypes, IRecipe[]>();
 
 
         /*************
